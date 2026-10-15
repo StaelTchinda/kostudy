@@ -5,6 +5,7 @@ export type ParsedQuestion = Omit<Question, 'id' | 'source'>;
 
 export interface ValidationResult {
   validQuestions: ParsedQuestion[];
+  questionIds?: string[]
   errors: string[];
 }
 
@@ -99,11 +100,15 @@ export function parseAndValidate(data: string, format: 'json' | 'csv'): Validati
   }
 
   const validQuestions: ParsedQuestion[] = [];
+  const questionIds: string[] = [];
   
   parsedData.forEach((q, index) => {
     const validationErrors = getQuestionValidationErrors(q, index);
     if (validationErrors.length === 0) {
       validQuestions.push(q as ParsedQuestion);
+      if ("id" in q) {
+        questionIds.push(q["id"])
+      }
     } else {
       allErrors.push(...validationErrors);
     }
@@ -114,5 +119,5 @@ export function parseAndValidate(data: string, format: 'json' | 'csv'): Validati
     return { validQuestions: [], errors: allErrors };
   }
 
-  return { validQuestions, errors: [] };
+  return { validQuestions, questionIds,  errors: [] };
 }

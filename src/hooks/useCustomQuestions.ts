@@ -1,6 +1,6 @@
 import { useLocalStorage } from './useLocalStorage';
 import { Question } from '../types/question';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4, validate as uuidValidate } from 'uuid';
 import { ParsedQuestion } from '../utils/import';
 
 const CUSTOM_QUESTIONS_KEY = 'customQuizQuestions';
@@ -25,8 +25,14 @@ export const useCustomQuestions = () => {
     setCustomQuestions([...filteredQuestions]);
   };
 
-  const addBulkQuestions = (questions: ParsedQuestion[]) => {
-    const newQuestions = questions.map(q => ({ ...q, id: uuidv4(), source: 'custom' } as Question));
+  const addBulkQuestions = (questions: ParsedQuestion[], ids?: string[]) => {
+    if (ids != undefined && questions.length != ids.length) {
+      throw new Error("questions and ids must have the same length")
+    }
+    if (ids != undefined && ids.some(id => !uuidValidate(id))) {
+      throw new TypeError("ids must be valid UUIDs");
+    }
+    const newQuestions = questions.map((q, idx)=> ({ ...q, id: (ids!=undefined) ? ids[idx] : uuidv4(), source: 'custom' } as Question));
     setCustomQuestions([...customQuestions, ...newQuestions]);
   };
 

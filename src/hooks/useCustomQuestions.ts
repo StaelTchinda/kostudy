@@ -27,13 +27,27 @@ export const useCustomQuestions = () => {
 
   const addBulkQuestions = (questions: ParsedQuestion[], ids?: string[]) => {
     if (ids != undefined && questions.length != ids.length) {
-      throw new Error("questions and ids must have the same length")
+      throw new Error("questions and ids must have the same length");
     }
     if (ids != undefined && ids.some(id => !uuidValidate(id))) {
       throw new TypeError("ids must be valid UUIDs");
     }
-    const newQuestions = questions.map((q, idx)=> ({ ...q, id: (ids!=undefined) ? ids[idx] : uuidv4(), source: 'custom' } as Question));
-    setCustomQuestions([...customQuestions, ...newQuestions]);
+
+    const incomingQuestions = questions.map((q, idx) => ({...q, id: ids != undefined ? ids[idx] : uuidv4(), source: 'custom'} as Question));
+
+    setCustomQuestions(prev => {
+      if (!ids) {
+        return [...prev, ...incomingQuestions];
+      }
+
+      const incomingMap = new Map(incomingQuestions.map(q => [q.id, q]));
+      const prevIds = new Set(prev.map(q => q.id));
+      // Update existing questions that match the referred IDs
+      const updated = prev.map(q => incomingMap.has(q.id) ? incomingMap.get(q.id)! : q);
+      // Append any incoming questions with IDs that didn't exist previously
+      const toAdd = incomingQuestions.filter(q => !prevIds.has(q.id));
+      return [...updated, ...toAdd];
+    });
   };
 
   const bulkDeleteQuestions = (questionIds: string[]) => {

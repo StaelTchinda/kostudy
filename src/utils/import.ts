@@ -38,7 +38,7 @@ function getQuestionValidationErrors(q: any, index: number): string[] {
           errors.push(`${prefix} 'correctAnswer' is missing for multiple-choice.`);
         } else if (Array.isArray(q.correctAnswer) && (q.correctAnswer.length < 1 || q.correctAnswer.some((answer: any) => typeof answer !== 'string'))) {
           errors.push(`${prefix} 'correctAnswer' must be an array of strings with at least 1 item for multiple-choice.`);
-        } else if (!q.options.includes(q.correctAnswer)) {
+        } else if ((typeof q.correctAnswer == 'string' && !q.options.includes(q.correctAnswer)) || (Array.isArray(q.correctAnswer) && q.correctAnswer.some((answer: any) => !q.options.includes(answer)))) {
           errors.push(`${prefix} 'correctAnswer' must match one of the 'options'.`);
         }
       }

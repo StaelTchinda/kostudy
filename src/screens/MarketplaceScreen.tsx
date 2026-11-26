@@ -55,6 +55,14 @@ export default function MarketplaceScreen() {
         <div className="tabs tabs-boxed bg-base-200/50" aria-label="Marketplace content type">
           <button
             type="button"
+            aria-pressed={catalogType === 'paths'}
+            className={`tab flex-1 ${catalogType === 'paths' ? 'tab-active !bg-primary !text-primary-content' : ''}`}
+            onClick={() => setCatalogType('paths')}
+          >
+            Paths ({curriculumPaths.length})
+          </button>
+          <button
+            type="button"
             aria-pressed={catalogType === 'lessons'}
             className={`tab flex-1 ${catalogType === 'lessons' ? 'tab-active !bg-primary !text-primary-content' : ''}`}
             onClick={() => setCatalogType('lessons')}
@@ -68,14 +76,6 @@ export default function MarketplaceScreen() {
             onClick={() => setCatalogType('questions')}
           >
             Questions ({builtInQuestions.length})
-          </button>
-          <button
-            type="button"
-            aria-pressed={catalogType === 'paths'}
-            className={`tab flex-1 ${catalogType === 'paths' ? 'tab-active !bg-primary !text-primary-content' : ''}`}
-            onClick={() => setCatalogType('paths')}
-          >
-            Paths ({curriculumPaths.length})
           </button>
         </div>
 

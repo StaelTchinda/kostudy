@@ -259,17 +259,19 @@ This app is a static site (built with Vite) and can be deployed for free on mult
 
 ## Deploy this repository to GitHub Pages
 
-The GitHub Actions workflow builds public, AI-disabled previews for branches under `preview/*`. It does not publish an app from `main` or `dev`; the Pages site root intentionally has no KoStudy app. The existing Netlify deployment is unaffected.
+The GitHub Actions workflow publishes the AI-disabled app from `main` at `https://staeltchinda.github.io/kostudy/` and active `preview/*` branches under `/kostudy/preview/<branch>/`. Main and previews are assembled into one Pages artifact so updates do not replace one another. The existing Netlify deployment is unaffected.
 
 1. In repository **Settings → Pages**, set the source to **GitHub Actions**.
 2. In **Settings → Secrets and variables → Actions → Variables**, create `ENABLE_PAGES_DEPLOY` with value `true`.
-3. Push a branch named `preview/<name>` to publish it at `https://staeltchinda.github.io/kostudy/preview/<name>/`.
+3. Merge the reviewed release PR into `main` to publish the main app. Push a branch named `preview/<name>` to publish it at `https://staeltchinda.github.io/kostudy/preview/<name>/`.
 
 To stop publishing, set the variable to `false` or delete it. The Pages build does not require a Gemini key or Netlify Function. Each preview shares browser storage with other paths on the same origin; use a separate browser profile for isolated test data.
 
 To remove a preview, delete its `preview/<name>` branch. Its files are removed from Pages on the next successful preview deployment.
 
-To build and validate a preview locally, set `PAGES_BASE_PATH=/kostudy/preview/<name>/ VITE_ENABLE_AI=false npm run build:pages`. Vite's preview server does not emulate GitHub Pages' repository subpath.
+The currently active preview branch must receive the unified workflow before future pushes; its sync PR is kept separate so it cannot publish the old preview-only artifact over the main app.
+
+To build and validate the main site locally, set `PAGES_BASE_PATH=/kostudy/ VITE_ENABLE_AI=false npm run build:pages`. For a preview, set `PAGES_BASE_PATH=/kostudy/preview/<name>/ VITE_ENABLE_AI=false npm run build:pages`. Vite's preview server does not emulate GitHub Pages' repository subpath.
 
 Build and preview locally
 - Install: `npm install`

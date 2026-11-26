@@ -5,11 +5,21 @@ import { createPagesFallback } from './pages-fallback.mjs';
 
 const fallbackPage = '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>KoStudy preview not found</title></head><body><main><h1>404</h1><p>This page is not part of a published KoStudy preview.</p></main></body></html>';
 
-export async function assemblePagesSite(siteDir, previewArtifactsDir, previews) {
+export async function assemblePagesSite(siteDir, mainArtifactDir, previewArtifactsDir, previews) {
   const root = resolve(siteDir);
+  const mainArtifact = resolve(mainArtifactDir);
   const artifactsRoot = resolve(previewArtifactsDir);
-  const previewBases = [];
+  const appBases = ['/kostudy/'];
   await mkdir(root, { recursive: true });
+
+  try {
+    await access(resolve(mainArtifact, 'index.html'));
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+    throw new Error('Main artifact is missing an index.html file.');
+  }
+
+  await cp(mainArtifact, root, { recursive: true, force: true });
 
   for (const preview of previews) {
     const { artifactName, basePath, destination } = preview;
@@ -39,17 +49,18 @@ export async function assemblePagesSite(siteDir, previewArtifactsDir, previews) 
     }
 
     await cp(sourcePath, outputPath, { recursive: true, force: true });
-    previewBases.push(basePath);
+    appBases.push(basePath);
   }
 
-  await writeFile(resolve(root, '404.html'), createPagesFallback(fallbackPage, previewBases));
-  return { previewCount: previewBases.length };
+  await writeFile(resolve(root, '404.html'), createPagesFallback(fallbackPage, appBases));
+  return { previewCount: appBases.length - 1 };
 }
 
 if (process.env.PAGES_SITE_DIR) {
   const previews = JSON.parse(process.env.PAGES_PREVIEWS || '[]');
   const { previewCount } = await assemblePagesSite(
     process.env.PAGES_SITE_DIR,
+    process.env.PAGES_MAIN_ARTIFACT_DIR,
     process.env.PAGES_PREVIEW_ARTIFACTS_DIR,
     previews,
   );

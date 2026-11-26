@@ -8,6 +8,11 @@ if (!basePath?.startsWith('/') || !basePath.endsWith('/')) {
 
 const dist = 'dist';
 const index = await readFile(`${dist}/index.html`, 'utf8');
+const assetFiles = await readdir(`${dist}/assets`);
+const bundles = await Promise.all(assetFiles
+  .filter((file) => file.endsWith('.js'))
+  .map((file) => readFile(`${dist}/assets/${file}`, 'utf8')));
+const bundle = bundles.join('\n');
 const manifests = await Promise.all(['manifest.json', 'manifest.webmanifest'].map(async (file) => [
   file,
   JSON.parse(await readFile(`${dist}/${file}`, 'utf8')),
@@ -18,6 +23,9 @@ if (basePath !== '/' && index.includes('href="/manifest.json"')) failures.push('
 if (index.includes('src="/src/main.tsx"')) failures.push('index.html still points to the Vite source entry.');
 if (!index.includes(`${basePath}assets/`)) failures.push(`Built app assets are not rooted at ${basePath}.`);
 if (!index.includes('id="root"')) failures.push('Built index.html is missing the app root.');
+if (!bundle.includes('__pages_route') || !bundle.includes('history.replaceState')) {
+  failures.push('Build cannot restore routes passed by the Pages fallback.');
+}
 
 for (const [file, manifest] of manifests) {
   for (const [name, value] of [['start_url', manifest.start_url], ['scope', manifest.scope]]) {
@@ -33,17 +41,6 @@ for (const [file, manifest] of manifests) {
 
 const registerScript = await readFile(`${dist}/registerSW.js`, 'utf8');
 if (!registerScript.includes(`${basePath}sw.js`)) failures.push(`Service worker registration is not rooted at ${basePath}.`);
-
-if (basePath.includes('/preview/')) {
-  const assetFiles = await readdir(`${dist}/assets`);
-  const bundles = await Promise.all(assetFiles
-    .filter((file) => file.endsWith('.js'))
-    .map((file) => readFile(`${dist}/assets/${file}`, 'utf8')));
-  const bundle = bundles.join('\n');
-  if (!bundle.includes('__pages_route') || !bundle.includes('history.replaceState')) {
-    failures.push('Preview build cannot restore the route passed by the Pages fallback.');
-  }
-}
 
 for (const file of ['404.html', 'sw.js']) {
   try {

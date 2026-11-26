@@ -3,11 +3,12 @@ import { Link } from 'react-router-dom';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import Header from '../components/Header';
 import { usePersonalContent } from '../hooks/usePersonalContent';
+import { groupQuestionsByTopic } from '../utils/personalContent';
 
 type CatalogType = 'lessons' | 'questions';
 
 export default function MarketplaceScreen() {
-  const { builtInLessons, builtInQuestions, selection, selectedLessonIds, selectedQuestionIds, addLesson, removeLesson, addQuestion, removeQuestion } = usePersonalContent();
+  const { builtInLessons, builtInQuestions, personalLessons, personalQuestions, selectedLessonIds, selectedQuestionIds, addLesson, removeLesson, addQuestionGroup, removeQuestionGroup } = usePersonalContent();
   const [catalogType, setCatalogType] = useState<CatalogType>('lessons');
   const [searchTerm, setSearchTerm] = useState('');
   const searchId = useId();
@@ -18,24 +19,28 @@ export default function MarketplaceScreen() {
     ),
     [builtInLessons, normalizedSearch],
   );
-  const visibleQuestions = useMemo(
-    () => builtInQuestions.filter((question) =>
-      `${question.question} ${question.category}`.toLowerCase().includes(normalizedSearch),
-    ),
+  const visibleQuestionGroups = useMemo(
+    () => groupQuestionsByTopic(builtInQuestions)
+      .filter((group) => group.topic.toLowerCase().includes(normalizedSearch)),
     [builtInQuestions, normalizedSearch],
   );
-  const selectedCount = selection.lessonIds.length + selection.questionIds.length;
+  const personalContentCount = personalLessons.length + personalQuestions.length;
 
   return (
     <div className="pb-24 pt-4">
-      <Header title="Marketplace" showBackButton />
+      <Header title="Marketplace" showBackButton backTo="/categories" backLabel="Learn" />
+      <nav aria-label="Breadcrumb" className="mb-4 px-4 text-sm">
+        <Link to="/categories" className="font-medium text-primary underline">Learn</Link>
+        <span aria-hidden="true" className="mx-2 text-base-content/50">/</span>
+        <span aria-current="page" className="text-base-content/65">Marketplace</span>
+      </nav>
       <div className="space-y-5 px-4">
         <div>
           <p className="text-sm leading-6 text-base-content/65">
             Browse KoStudy's built-in lessons and questions. Add only what you want in your Learn space.
           </p>
           <p className="mt-2 text-xs text-base-content/55">
-            {selectedCount} {selectedCount === 1 ? 'item' : 'items'} in your Learn space
+            {personalContentCount} {personalContentCount === 1 ? 'item' : 'items'} in your Learn space
           </p>
         </div>
 
@@ -66,7 +71,7 @@ export default function MarketplaceScreen() {
             type="search"
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
-            placeholder={catalogType === 'lessons' ? 'Search lessons' : 'Search questions or topics'}
+            placeholder={catalogType === 'lessons' ? 'Search lessons' : 'Search topics'}
             className="input input-bordered w-full pl-10"
           />
         </div>
@@ -104,29 +109,36 @@ export default function MarketplaceScreen() {
           </div>
         ) : (
           <div className="space-y-3">
-            {visibleQuestions.length ? visibleQuestions.map((question) => {
-              const added = selectedQuestionIds.has(question.id);
+            {visibleQuestionGroups.length ? visibleQuestionGroups.map((group) => {
+              const questionIds = group.questions.map((question) => question.id);
+              const selectedInGroup = questionIds.filter((id) => selectedQuestionIds.has(id)).length;
+              const added = selectedInGroup === questionIds.length;
+              const partial = selectedInGroup > 0 && !added;
               return (
-                <article key={question.id} className="rounded-2xl border border-base-300 bg-base-100 p-4 shadow-sm">
-                  <h2 className="font-semibold leading-6">{question.question}</h2>
-                  <div className="mt-2 flex flex-wrap gap-2 text-sm text-base-content/70">
-                    <span className="badge badge-ghost">{question.category}</span>
-                    <span className="badge badge-outline">{question.difficulty}</span>
+                <article key={group.topic} className="rounded-2xl border border-base-300 bg-base-100 p-4 shadow-sm">
+                  <div className="flex items-start justify-between gap-3">
+                    <h2 className="font-semibold leading-6">{group.topic}</h2>
+                    <span className="badge badge-ghost shrink-0">{questionIds.length} {questionIds.length === 1 ? 'question' : 'questions'}</span>
                   </div>
+                  <p className="mt-2 text-sm text-base-content/65">
+                    {partial
+                      ? `${selectedInGroup} of ${questionIds.length} questions in your Learn space`
+                      : added ? 'In your Learn space' : 'Add this topic to Learn'}
+                  </p>
                   <div className="mt-3 flex justify-end">
                     <button
                       type="button"
                       aria-pressed={added}
-                      aria-label={`${added ? 'Remove' : 'Add'} question from Learn`}
+                      aria-label={`${added ? 'Remove' : 'Add'} all ${questionIds.length} questions in ${group.topic} ${added ? 'from' : 'to'} Learn`}
                       className={`btn btn-sm ${added ? 'btn-ghost' : 'btn-primary'}`}
-                      onClick={() => added ? removeQuestion(question.id) : addQuestion(question.id)}
+                      onClick={() => added ? removeQuestionGroup(questionIds) : addQuestionGroup(questionIds)}
                     >
-                      {added ? 'Remove' : 'Add to Learn'}
+                      {added ? 'Remove topic' : partial ? 'Add remaining questions' : 'Add topic'}
                     </button>
                   </div>
                 </article>
               );
-            }) : <p className="py-12 text-center text-sm text-base-content/60">No questions match your search.</p>}
+            }) : <p className="py-12 text-center text-sm text-base-content/60">No topics match your search.</p>}
           </div>
         )}
 

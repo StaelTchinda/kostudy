@@ -7,6 +7,8 @@ import ThemeToggle from './ThemeToggle';
 interface HeaderProps {
   title: string;
   showBackButton?: boolean;
+  backTo?: string;
+  backLabel?: string;
   showSettings?: boolean;
   showThemeToggle?: boolean;
 }
@@ -14,6 +16,8 @@ interface HeaderProps {
 export default function Header({
   title,
   showBackButton = false,
+  backTo,
+  backLabel,
   showSettings = true,
   showThemeToggle = true
 }: HeaderProps) {
@@ -32,13 +36,15 @@ export default function Header({
           <div className="flex items-center gap-2 h-12">
             {showBackButton && (
               <Link
-                to=".."
+                to={backTo ?? '..'}
+                aria-label={backLabel ? `Back to ${backLabel}` : 'Back'}
                 className="mr-3 inline-flex h-12 items-center text-base-content hover:text-primary"
                 style={{
                   transition: `color ${designTokens.transitions.duration} ${designTokens.transitions.timing}`,
                 }}
               >
                 <ArrowLeftIcon className="w-5 h-5" />
+                {backLabel && <span className="ml-1 text-sm font-medium">{backLabel}</span>}
               </Link>
             )}
             <Link to="/" className="mr-2 inline-flex h-12 items-center" aria-label={t('homeScreen.welcome')}>

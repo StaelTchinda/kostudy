@@ -22,6 +22,16 @@ interface LessonPath {
   lessonIds: string[];
 }
 
+interface TopicQuestion {
+  id: string;
+  category: string;
+}
+
+export interface QuestionTopicGroup<T extends TopicQuestion> {
+  topic: string;
+  questions: T[];
+}
+
 export const PERSONAL_CONTENT_STORAGE_KEY = 'personalLearningContent';
 
 const LEGACY_LEARNING_STORAGE_KEYS = [
@@ -43,6 +53,16 @@ const normalizeIds = (ids: string[]): string[] => Array.from(new Set(ids));
 
 export function getMarketplaceQuestions<T extends SourcedQuestion>(questions: readonly T[]): T[] {
   return questions.filter((question) => question.source === 'default');
+}
+
+export function groupQuestionsByTopic<T extends TopicQuestion>(questions: readonly T[]): QuestionTopicGroup<T>[] {
+  const groups = new Map<string, T[]>();
+  questions.forEach((question) => {
+    const group = groups.get(question.category) || [];
+    group.push(question);
+    groups.set(question.category, group);
+  });
+  return Array.from(groups, ([topic, groupedQuestions]) => ({ topic, questions: groupedQuestions }));
 }
 
 export function getMarketplaceLessons<T extends OriginLesson>(lessons: readonly T[]): T[] {
@@ -116,5 +136,17 @@ export function toggleSelection(ids: readonly string[], id: string, selected: bo
   } else {
     next.delete(id);
   }
+  return Array.from(next);
+}
+
+export function toggleSelectionGroup(ids: readonly string[], groupIds: readonly string[], selected: boolean): string[] {
+  const next = new Set(ids);
+  groupIds.forEach((id) => {
+    if (selected) {
+      next.add(id);
+    } else {
+      next.delete(id);
+    }
+  });
   return Array.from(next);
 }

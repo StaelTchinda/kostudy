@@ -11,6 +11,7 @@ import {
   PERSONAL_CONTENT_STORAGE_KEY,
   PersonalContentSelection,
   toggleSelection,
+  toggleSelectionGroup,
 } from '../utils/personalContent';
 
 const EMPTY_SELECTION: PersonalContentSelection = { lessonIds: [], questionIds: [] };
@@ -82,6 +83,18 @@ export function usePersonalContent() {
       questionIds: toggleSelection(current.questionIds, id, false),
     }));
   };
+  const addQuestionGroup = (ids: string[]) => {
+    setSelection((current) => ({
+      ...current,
+      questionIds: toggleSelectionGroup(current.questionIds, ids, true),
+    }));
+  };
+  const removeQuestionGroup = (ids: string[]) => {
+    setSelection((current) => ({
+      ...current,
+      questionIds: toggleSelectionGroup(current.questionIds, ids, false),
+    }));
+  };
 
   return {
     builtInLessons,
@@ -97,5 +110,7 @@ export function usePersonalContent() {
     removeLesson,
     addQuestion,
     removeQuestion,
+    addQuestionGroup,
+    removeQuestionGroup,
   };
 }

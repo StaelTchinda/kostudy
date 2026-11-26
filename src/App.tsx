@@ -49,6 +49,7 @@ function App() {
                   <Route path="/" element={<div className="w-full max-w-full overflow-x-hidden"><LandingPage /></div>} />
                   <Route path="/dashboard" element={<Layout><DashboardScreen /></Layout>} />
                   <Route path="/categories" element={<Layout><CategoriesScreen /></Layout>} />
+                  <Route path="/categories/marketplace" element={<Layout><MarketplaceScreen /></Layout>} />
                   <Route path="/categories/:categoryId" element={<Layout><CategoryScreen /></Layout>} />
                   <Route path="/lessons/new" element={<Layout><LessonCreatorScreen /></Layout>} />
                   <Route path="/lessons/:lessonId" element={<Layout><LessonScreen /></Layout>} />
@@ -58,7 +59,7 @@ function App() {
                   <Route path="/achievements" element={<Layout><AchievementsScreen /></Layout>} />
                   <Route path="/mistakes" element={<Layout><MistakesScreen /></Layout>} />
                   <Route path="/questions" element={<Layout><QuestionBankScreen /></Layout>} />
-                  <Route path="/marketplace" element={<Layout><MarketplaceScreen /></Layout>} />
+                  <Route path="/marketplace" element={<Navigate to="/categories/marketplace" replace />} />
                   <Route path="/questions/new" element={<Layout><QuestionFormScreen /></Layout>} />
                   <Route path="/questions/edit/:questionId" element={<Layout><QuestionFormScreen /></Layout>} />
                   <Route path="/settings" element={<Layout><SettingsScreen /></Layout>} />

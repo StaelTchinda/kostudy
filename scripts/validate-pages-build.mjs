@@ -1,4 +1,4 @@
-import { access, readFile } from 'node:fs/promises';
+import { access, readFile, readdir } from 'node:fs/promises';
 import process from 'node:process';
 
 const basePath = process.env.PAGES_BASE_PATH;
@@ -33,6 +33,17 @@ for (const [file, manifest] of manifests) {
 
 const registerScript = await readFile(`${dist}/registerSW.js`, 'utf8');
 if (!registerScript.includes(`${basePath}sw.js`)) failures.push(`Service worker registration is not rooted at ${basePath}.`);
+
+if (basePath.includes('/preview/')) {
+  const assetFiles = await readdir(`${dist}/assets`);
+  const bundles = await Promise.all(assetFiles
+    .filter((file) => file.endsWith('.js'))
+    .map((file) => readFile(`${dist}/assets/${file}`, 'utf8')));
+  const bundle = bundles.join('\n');
+  if (!bundle.includes('__pages_route') || !bundle.includes('history.replaceState')) {
+    failures.push('Preview build cannot restore the route passed by the Pages fallback.');
+  }
+}
 
 for (const file of ['404.html', 'sw.js']) {
   try {

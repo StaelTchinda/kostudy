@@ -43,7 +43,7 @@ export default function Header({
             )}
             <Link to="/" className="mr-2 inline-flex h-12 items-center" aria-label={t('homeScreen.welcome')}>
               <img
-                src="/kostudy.png"
+                src={`${import.meta.env.BASE_URL}kostudy.png`}
                 alt="Kostudy logo"
                 className="block w-6 h-6 object-contain rounded-md align-middle"
                 style={{

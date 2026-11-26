@@ -34,7 +34,7 @@ export default function HomeScreen() {
 
       <div className="px-4 mt-8">
         <div className="flex justify-center mb-6">
-          <img src="/kostudy.png" alt="Kostudy logo" className="w-20 h-20 rounded-xl shadow-md" />
+          <img src={`${import.meta.env.BASE_URL}kostudy.png`} alt="Kostudy logo" className="w-20 h-20 rounded-xl shadow-md" />
         </div>
         <div className="bg-base-100 rounded-xl p-6 shadow-md">
           {username ? (

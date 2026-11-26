@@ -4,6 +4,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 const config = defineConfig({
+  base: process.env.PAGES_BASE_PATH || '/',
   plugins: [
     react(),
     VitePWA({
@@ -19,21 +20,21 @@ const config = defineConfig({
         background_color: '#EEF5FF',
         display: 'standalone',
         orientation: 'portrait',
-        start_url: '/',
+        start_url: './',
         icons: [
           {
-            src: '/kostudy.png',
+            src: './kostudy.png',
             sizes: '32x32',
             type: 'image/png'
           },
           {
-            src: '/icon-192x192.png',
+            src: './icon-192x192.png',
             sizes: '192x192',
             type: 'image/png',
             purpose: 'any maskable'
           },
           {
-            src: '/icon-512x512.png',
+            src: './icon-512x512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable'

@@ -12,6 +12,7 @@ import Card from '../components/Card';
 import CategoryCard from '../components/CategoryCard';
 import LessonCard from '../components/lessons/LessonCard';
 import LearningPathCard from '../components/lessons/LearningPathCard';
+import { aiFeaturesEnabled } from '../config';
 
 export default function CategoriesScreen() {
   const { t } = useLanguage();
@@ -39,7 +40,7 @@ export default function CategoriesScreen() {
       </section>
 
       <section>
-        <div className="mb-4"><p className="text-xs font-semibold uppercase tracking-wider text-primary">Lessons</p><div className="flex flex-wrap items-center justify-between gap-3"><h2 className="mt-1 text-xl font-bold">Understand before you drill</h2><Link to="/lessons/new" className="btn btn-primary btn-sm">Create lesson</Link></div><p className="mt-1 max-w-2xl text-sm leading-6 text-base-content/65">First principles, coded experiments, prediction, retrieval, and reflection across different fields.</p></div>
+        <div className="mb-4"><p className="text-xs font-semibold uppercase tracking-wider text-primary">Lessons</p><div className="flex flex-wrap items-center justify-between gap-3"><h2 className="mt-1 text-xl font-bold">Understand before you drill</h2>{aiFeaturesEnabled && <Link to="/lessons/new" className="btn btn-primary btn-sm">Create lesson</Link>}</div><p className="mt-1 max-w-2xl text-sm leading-6 text-base-content/65">First principles, coded experiments, prediction, retrieval, and reflection across different fields.</p></div>
 
         <div className="mb-5 grid grid-cols-3 gap-2 rounded-3xl border border-primary/15 bg-primary/5 p-3 sm:gap-4 sm:p-5"><div className="text-center"><div className="text-2xl font-black sm:text-3xl">{lessons.length}</div><div className="text-[11px] text-base-content/55 sm:text-xs">lessons</div></div><div className="text-center"><div className="text-2xl font-black sm:text-3xl">{labCount}</div><div className="text-[11px] text-base-content/55 sm:text-xs">coded labs</div></div><div className="text-center"><div className="text-2xl font-black sm:text-3xl">{checkpointCount}</div><div className="text-[11px] text-base-content/55 sm:text-xs">retrieval checks</div></div></div>
 

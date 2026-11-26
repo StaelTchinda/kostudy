@@ -15,6 +15,7 @@ import {
 } from '@heroicons/react/24/solid';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
+import { aiFeaturesEnabled } from '../config';
 
 export default function BottomNav() {
   const location = useLocation();
@@ -27,12 +28,12 @@ export default function BottomNav() {
     { path: '/achievements', icon: TrophyIcon, activeIcon: TrophyIconSolid, label: t('nav.achievements') },
     { path: '/categories', icon: BookOpenIcon, activeIcon: BookOpenIconSolid, label: t('nav.categories') },
     { path: '/mistakes', icon: ArrowPathIcon, activeIcon: ArrowPathIconSolid, label: t('nav.mistakes') },
-    {
+    ...(aiFeaturesEnabled ? [{
       path: '/chat',
       icon: ChatBubbleBottomCenterTextIcon,
       activeIcon: ChatBubbleBottomCenterTextIconSolid,
       label: t('nav.chat'),
-    },
+    }] : []),
   ];
 
   return (

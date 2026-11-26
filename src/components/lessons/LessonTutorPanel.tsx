@@ -4,6 +4,7 @@ import GeminiLiveComponent from '../GeminiLiveComponent';
 import { callKoStudyServerAI } from '../../services/aiClient';
 import { Lesson, LessonBlock } from '../../types/lesson';
 import { LessonProgressEntry } from '../../utils/lessonProgress';
+import { aiFeaturesEnabled } from '../../config';
 
 interface TutorMessage { role: 'user' | 'tutor'; text: string; }
 
@@ -13,6 +14,8 @@ export default function LessonTutorPanel({ lesson, block, progress }: { lesson: 
     prompt: 'You are KoStudy lesson tutor. Teach the exact step the learner is viewing. Prefer hints and questions over immediately giving answers. Distinguish teaching simulations from real measurements or universal benchmarks. Source entries are metadata/author notes unless their content is explicitly present; never pretend you opened or read an external source merely because its URL is listed.',
     data: { lesson: { title: lesson.title, coreQuestion: lesson.coreQuestion, firstPrinciple: lesson.firstPrinciple, concepts: lesson.concepts, tutorBrief: lesson.tutorBrief, sources: lesson.sources || [] }, currentBlock: block, progress },
   }), [lesson, block, progress]);
+
+  if (!aiFeaturesEnabled) return null;
 
   const send = async (preset?: string) => {
     const userText = (preset || input).trim(); if (!userText || loading) return;

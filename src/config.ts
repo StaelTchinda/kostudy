@@ -32,6 +32,8 @@ export interface AppConfig {
   };
 }
 
+export const aiFeaturesEnabled = import.meta.env.VITE_ENABLE_AI !== 'false';
+
 export const config: AppConfig = {
   appName: 'Kostudy',
   theme: 'light',
@@ -66,6 +68,6 @@ export const config: AppConfig = {
     enableQuestionImage: true,
   },
   aiFeatures: {
-    enableAIGeneration: true,
+    enableAIGeneration: aiFeaturesEnabled,
   },
 };

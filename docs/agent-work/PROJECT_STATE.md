@@ -11,3 +11,4 @@ Maintain and extend the interactive learning engine and connect useful labs to t
 ## Active workstreams
 
 - `lesson-checkpoint-retry.md` — checkpoint retry and progress-gating improvement (`verification`)
+- `github-pages-deployment.md` — opt-in preview-only GitHub Pages deployment (`shipped`)

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useQuiz } from '../context/QuizContext';
-import { useQuestions } from '../hooks/useQuestions';
+import { usePersonalContent } from '../hooks/usePersonalContent';
 import { useLanguage } from '../context/LanguageContext';
 import Header from '../components/Header';
 
@@ -25,7 +25,7 @@ export default function DifficultyScreen() {
   const navigate = useNavigate();
   const { categoryId } = useParams();
   const { setCurrentQuiz } = useQuiz();
-  const { getQuestionsByCategory } = useQuestions();
+  const { personalQuestions } = usePersonalContent();
   const { t } = useLanguage();
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | null>(null);
   const [availableDifficulties, setAvailableDifficulties] = useState<DifficultyOption[]>([]);
@@ -37,7 +37,7 @@ export default function DifficultyScreen() {
       return;
     }
 
-    const questions = getQuestionsByCategory(categoryId);
+    const questions = personalQuestions.filter((question) => question.category === categoryId);
     const difficulties = new Set(questions.map(q => q.difficulty));
 
     const options: DifficultyOption[] = Array.from(difficulties).map(diff => ({
@@ -60,7 +60,7 @@ export default function DifficultyScreen() {
     if (options.length > 0 && !selectedDifficulty) {
       setSelectedDifficulty(options[0].value);
     }
-  }, [categoryId, navigate]);
+  }, [categoryId, navigate, personalQuestions, selectedDifficulty, t]);
 
   const handleDifficultySelect = (difficulty: Difficulty) => {
     setSelectedDifficulty(difficulty);
@@ -85,6 +85,9 @@ export default function DifficultyScreen() {
         <p className="text-center text-base-content/80 mt-8">
           {t('difficultyScreen.noQuestions')}
         </p>
+        <div className="mt-4 text-center">
+          <Link to="/marketplace" className="btn btn-primary">Browse Marketplace</Link>
+        </div>
       </div>
     );
   }
@@ -98,6 +101,7 @@ export default function DifficultyScreen() {
         {availableDifficulties.map((option) => (
           <button
             key={option.value}
+            type="button"
             onClick={() => handleDifficultySelect(option.value)}
             className={`w-full p-6 rounded-xl border transition-all
                        ${option.color}

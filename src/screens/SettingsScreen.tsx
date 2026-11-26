@@ -24,6 +24,7 @@ import Header from '../components/Header';
 import soundManager from '../utils/soundManager';
 import { ChatMessage } from '../hooks/useChat';
 import { GeneratedApp } from '../types/aiGenerator';
+import { aiFeaturesEnabled } from '../config';
 
 interface Progress {
   [key: string]: {
@@ -139,8 +140,10 @@ export default function SettingsScreen() {
         const text = await file.text();
         const data: UserData = JSON.parse(text);
 
+        const is_set = (variable: any) => variable != undefined && variable != null
+
         // Validate minimal data structure
-        if (!data.username || !data.progress || !data.mistakes || !data.customQuestions || !data.timestamp) {
+        if (!is_set(data.username) || !is_set(data.progress) || !is_set(data.mistakes) || !is_set(data.customQuestions) || !is_set(data.timestamp)) {
           throw new Error('Invalid data format');
         }
 
@@ -218,13 +221,13 @@ export default function SettingsScreen() {
       path: '#',
       onClick: toggleSound
     },
-    {
+    ...(aiFeaturesEnabled ? [{
       id: 'ai-settings',
       label: t('settingsScreen.aiSettings'),
       icon: CpuChipIcon,
       path: '#',
       onClick: () => setShowAiSettingsModal(true)
-    },
+    }] : []),
     {
       id: 'about',
       label: t('settingsScreen.about'),
@@ -384,7 +387,7 @@ export default function SettingsScreen() {
       </div>
       
       {/* AI Settings Modal */}
-      {showAiSettingsModal && (
+      {aiFeaturesEnabled && showAiSettingsModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-base-100 rounded-2xl p-6 w-full max-w-md shadow-xl">
             <div className="flex justify-between items-center mb-4">

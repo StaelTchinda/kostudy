@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
+    branches: [dev, main, 'preview/**']
   workflow_dispatch:
 
 concurrency:
@@ -19,13 +19,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Use Node 20
+      - name: Use Node 22
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Install dependencies from package.json
         run: npm install --package-lock=false --ignore-scripts --no-audit --no-fund
+
+      - name: Run unit tests
+        run: npm test
+      - name: Run Pages utility tests
+        run: npm run test:pages-preview
 
       - name: Validate lesson UX contracts
         run: npm run validate:lesson-ux

@@ -1,20 +1,18 @@
 import { Link } from 'react-router-dom';
-import { useQuestions } from '../hooks/useQuestions';
-import { useLessons } from '../hooks/useLessons';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { LearningState } from '../utils/learningState';
 import { LessonProgressState } from '../utils/lessonProgress';
 import { buildConceptMastery } from '../utils/mastery';
-import { getQuestionIdsForConcept } from '../data/questionConceptMap';
+import { questionConceptMap } from '../data/questionConceptMap';
+import { usePersonalContent } from '../hooks/usePersonalContent';
 
 const statusLabel = { new: 'Not explored', exposed: 'Seen in lesson', weak: 'Needs work', developing: 'Developing', strong: 'Strong' } as const;
 
 export default function MasteryOverview() {
-  const { allQuestions } = useQuestions();
-  const { allLessons } = useLessons();
+  const { personalQuestions, personalLessons } = usePersonalContent();
   const [learningState] = useLocalStorage<LearningState>('questionLearningState', {});
   const [lessonProgress] = useLocalStorage<LessonProgressState>('lessonProgress', {});
-  const concepts = buildConceptMastery(allLessons, allQuestions, learningState, lessonProgress).sort((a, b) => {
+  const concepts = buildConceptMastery(personalLessons, personalQuestions, learningState, lessonProgress).sort((a, b) => {
     const rank = { weak: 0, developing: 1, exposed: 2, new: 3, strong: 4 };
     return rank[a.status] - rank[b.status] || (a.score ?? 101) - (b.score ?? 101);
   });
@@ -32,7 +30,9 @@ export default function MasteryOverview() {
         <div className="mt-5 grid gap-3 md:grid-cols-2">
           {concepts.slice(0, 8).map((concept) => {
             const lessonId = concept.lessonIds[0];
-            const mappedQuestions = getQuestionIdsForConcept(concept.id).length;
+            const mappedQuestions = personalQuestions.filter((question) =>
+              questionConceptMap[question.id]?.includes(concept.id),
+            ).length;
             const shownValue = concept.score ?? concept.exposure;
             const valueLabel = concept.score !== undefined ? `${concept.score}%` : concept.exposure > 0 ? `${concept.exposure}% seen` : '—';
             return (

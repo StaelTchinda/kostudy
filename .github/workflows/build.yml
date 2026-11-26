@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [dev, main]
+    branches: [dev, main, 'preview/**']
   workflow_dispatch:
 
 concurrency:
@@ -29,6 +29,8 @@ jobs:
 
       - name: Run unit tests
         run: npm test
+      - name: Run Pages utility tests
+        run: npm run test:pages-preview
 
       - name: Validate lesson UX contracts
         run: npm run validate:lesson-ux

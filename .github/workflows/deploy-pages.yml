@@ -1,8 +1,8 @@
-name: Deploy GitHub Pages previews
+name: Deploy GitHub Pages
 
 on:
   push:
-    branches: ['preview/**']
+    branches: [main, 'preview/**']
   workflow_dispatch:
 
 permissions:
@@ -10,7 +10,7 @@ permissions:
 
 concurrency:
   group: github-pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   discover:
@@ -32,7 +32,37 @@ jobs:
         id: preview-branches
         run: node scripts/list-preview-branches.mjs >> "$GITHUB_OUTPUT"
 
-  build:
+  build-main:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Use Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install --package-lock=false --ignore-scripts --no-audit --no-fund
+
+      - name: Build and validate main Pages site
+        run: npm run build:pages
+        env:
+          PAGES_BASE_PATH: /kostudy/
+          VITE_ENABLE_AI: 'false'
+
+      - name: Upload main build
+        uses: actions/upload-artifact@v4
+        with:
+          name: pages-main
+          path: dist
+          retention-days: 1
+
+  build-preview:
     needs: discover
     if: ${{ needs.discover.outputs.has_previews == 'true' }}
     strategy:
@@ -47,10 +77,10 @@ jobs:
         with:
           ref: ${{ matrix.preview.sha }}
 
-      - name: Use Node 20
+      - name: Use Node 22
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Install dependencies
         run: npm install --package-lock=false --ignore-scripts --no-audit --no-fund
@@ -69,17 +99,23 @@ jobs:
           retention-days: 1
 
   assemble:
-    needs: [discover, build]
-    if: ${{ always() && needs.discover.result == 'success' && (needs.build.result == 'success' || needs.build.result == 'skipped') }}
+    needs: [discover, build-main, build-preview]
+    if: ${{ always() && needs.discover.result == 'success' && needs.build-main.result == 'success' && (needs.build-preview.result == 'success' || needs.build-preview.result == 'skipped') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Use Node 20
+      - name: Use Node 22
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
+
+      - name: Download main build
+        uses: actions/download-artifact@v4
+        with:
+          name: pages-main
+          path: main-artifact
 
       - name: Download preview builds
         if: ${{ needs.discover.outputs.has_previews == 'true' }}
@@ -89,10 +125,11 @@ jobs:
           path: preview-artifacts
           merge-multiple: false
 
-      - name: Assemble preview-only site
+      - name: Assemble main and preview sites
         run: node scripts/assemble-pages-site.mjs
         env:
           PAGES_SITE_DIR: dist
+          PAGES_MAIN_ARTIFACT_DIR: main-artifact
           PAGES_PREVIEW_ARTIFACTS_DIR: preview-artifacts
           PAGES_PREVIEWS: ${{ needs.discover.outputs.previews }}
 
@@ -102,7 +139,7 @@ jobs:
           path: dist
 
   deploy:
-    if: ${{ vars.ENABLE_PAGES_DEPLOY == 'true' }}
+    if: ${{ vars.ENABLE_PAGES_DEPLOY == 'true' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/preview/')) }}
     needs: assemble
     runs-on: ubuntu-latest
     environment:

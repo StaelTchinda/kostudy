@@ -1,17 +1,19 @@
-import { createContext, useContext } from 'react';
+import { createContext, Dispatch, SetStateAction, useContext } from 'react';
+
+export interface CurrentQuiz {
+  category?: string;
+  difficulty?: string;
+  progress?: number;
+  score?: number;
+  currentLevel?: string;
+  playAllMode?: boolean;
+  currentStreak?: number;
+  maxStreak?: number;
+}
 
 export interface QuizContextType {
-  currentQuiz: {
-    category?: string;
-    difficulty?: string;
-    progress?: number;
-    score?: number;
-    currentLevel?: string;
-    playAllMode?: boolean;
-    currentStreak?: number;
-    maxStreak?: number;
-  };
-  setCurrentQuiz: (quiz: QuizContextType['currentQuiz']) => void;
+  currentQuiz: CurrentQuiz;
+  setCurrentQuiz: Dispatch<SetStateAction<CurrentQuiz>>;
 }
 
 export const QuizContext = createContext<QuizContextType | null>(null);

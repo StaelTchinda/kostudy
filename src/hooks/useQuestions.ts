@@ -18,9 +18,9 @@ assertValidCurriculum(
   'Cross-domain retrieval bank',
 );
 
-const sourcedDefaults: Question[] = [...defaultQuestions, ...curriculumQuestions].map((question) => ({ ...question, source: 'default' }));
+export const builtInQuestions: Question[] = [...defaultQuestions, ...curriculumQuestions].map((question) => ({ ...question, source: 'default' }));
 
-const shuffle = <T,>(items: T[]): T[] => {
+export const shuffle = <T,>(items: T[]): T[] => {
   const result = [...items];
   for (let index = result.length - 1; index > 0; index -= 1) {
     const swap = Math.floor(Math.random() * (index + 1));
@@ -33,7 +33,7 @@ export const useQuestions = () => {
   const { customQuestions } = useCustomQuestions();
   const data = useMemo(() => {
     const byId = new Map<string, Question>();
-    sourcedDefaults.forEach((question) => byId.set(question.id, question));
+    builtInQuestions.forEach((question) => byId.set(question.id, question));
     customQuestions.forEach((question) => byId.set(question.id, { ...question, source: 'custom' }));
     const allQuestions = Array.from(byId.values());
     const grouped = new Map<string, Question[]>();

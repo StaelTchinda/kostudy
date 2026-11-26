@@ -14,7 +14,7 @@ This is my attempt to reimagine what a learning app should be in the age of AI. 
 ## Live Demo
 
 - Watch on YouTube: https://youtu.be/VsXnGYEopW0?si=qPlHpDq75T32G-RJ
-- Try it at https://kostudyxcv.netlify.app/
+- Try the preview at https://staeltchinda.github.io/kostudy/preview/github-pages-deployment/ (available after publishing the preview branch below)
 
 https://github.com/user-attachments/assets/6f3066c1-657b-4e5f-b002-2f2f06004002
 
@@ -251,17 +251,23 @@ This app is a static site (built with Vite) and can be deployed for free on mult
     - Output directory: `dist`
 
 - GitHub Pages (free)
-  - Steps:
-    - Push your repo to GitHub.
-    - Build locally: `npm run build` (outputs to `dist`)
-    - Install GitHub Pages CLI or use an Action. Quick manual step:
-      `npx gh-pages -d dist`
-    - Or set up the “Static file” workflow in Actions to publish `dist` on push.
-  - Note: For a fully automated approach, add a GitHub Action that runs `npm ci && npm run build` and uploads `dist` to Pages.
+  - See [Deploy this repository to GitHub Pages](#deploy-this-repository-to-github-pages) for the automated, opt-in workflow.
 
 - Static hosts (Surge, Cloudflare Pages, etc.)
   - Surge: `npm run build` then `npx surge ./dist your-subdomain.surge.sh`
   - Cloudflare Pages: connect your repo; set build command `npm run build` and output directory `dist`.
+
+## Deploy this repository to GitHub Pages
+
+The GitHub Actions workflow builds public, AI-disabled previews for branches under `preview/*`. It does not publish an app from `main` or `dev`; the Pages site root intentionally has no KoStudy app. The existing Netlify deployment is unaffected.
+
+1. In repository **Settings → Pages**, set the source to **GitHub Actions**.
+2. In **Settings → Secrets and variables → Actions → Variables**, create `ENABLE_PAGES_DEPLOY` with value `true`.
+3. Push a branch named `preview/<name>` to publish it at `https://staeltchinda.github.io/kostudy/preview/<name>/`.
+
+To stop publishing, set the variable to `false` or delete it. The Pages build does not require a Gemini key or Netlify Function. Each preview shares browser storage with other paths on the same origin; use a separate browser profile for isolated test data.
+
+To build and validate a preview locally, set `PAGES_BASE_PATH=/kostudy/preview/<name>/ VITE_ENABLE_AI=false npm run build:pages`. Vite's preview server does not emulate GitHub Pages' repository subpath.
 
 Build and preview locally
 - Install: `npm install`

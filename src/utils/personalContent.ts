@@ -1,6 +1,7 @@
 export interface PersonalContentSelection {
   lessonIds: string[];
   questionIds: string[];
+  pathIds: string[];
 }
 
 export interface PersonalContentStorage {
@@ -19,6 +20,7 @@ interface OriginLesson {
 }
 
 interface LessonPath {
+  id: string;
   lessonIds: string[];
 }
 
@@ -50,6 +52,13 @@ const isStringArray = (value: unknown): value is string[] =>
   Array.isArray(value) && value.every((item) => typeof item === 'string');
 
 const normalizeIds = (ids: string[]): string[] => Array.from(new Set(ids));
+
+const inferSelectedPathIds = (paths: readonly LessonPath[], lessonIds: readonly string[]): string[] => {
+  const selectedLessonIds = new Set(lessonIds);
+  return paths
+    .filter((path) => path.lessonIds.every((lessonId) => selectedLessonIds.has(lessonId)))
+    .map((path) => path.id);
+};
 
 export function getMarketplaceQuestions<T extends SourcedQuestion>(questions: readonly T[]): T[] {
   return questions.filter((question) => question.source === 'default');
@@ -85,12 +94,20 @@ export function getPersonalLessons<T extends OriginLesson>(
 
 export function getPersonalPaths<T extends LessonPath>(
   paths: readonly T[],
-  selectedLessonIds: ReadonlySet<string>,
+  selectedPathIds: ReadonlySet<string>,
 ): T[] {
-  return paths.filter((path) => path.lessonIds.every((lessonId) => selectedLessonIds.has(lessonId)));
+  return paths.filter((path) => selectedPathIds.has(path.id));
 }
 
-const parseSelection = (value: unknown): PersonalContentSelection => {
+export function getPersonalLessonIds(
+  selection: Pick<PersonalContentSelection, 'lessonIds' | 'pathIds'>,
+  paths: readonly LessonPath[],
+): string[] {
+  const selectedPaths = getPersonalPaths(paths, new Set(selection.pathIds));
+  return normalizeIds([...selection.lessonIds, ...selectedPaths.flatMap((path) => path.lessonIds)]);
+}
+
+const parseSelection = (value: unknown, paths: readonly LessonPath[]): PersonalContentSelection => {
   if (
     typeof value !== 'object' ||
     value === null ||
@@ -102,28 +119,44 @@ const parseSelection = (value: unknown): PersonalContentSelection => {
     throw new Error('Stored personal learning content is invalid.');
   }
 
+  const storedPathIds = 'pathIds' in value ? value.pathIds : undefined;
+  if ('pathIds' in value && !isStringArray(storedPathIds)) {
+    throw new Error('Stored personal learning content is invalid.');
+  }
+
+  const lessonIds = normalizeIds(value.lessonIds);
   return {
-    lessonIds: normalizeIds(value.lessonIds),
+    lessonIds,
     questionIds: normalizeIds(value.questionIds),
+    pathIds: isStringArray(storedPathIds)
+      ? normalizeIds(storedPathIds)
+      : inferSelectedPathIds(paths, lessonIds),
   };
 };
 
+type PersonalContentCatalog = Pick<PersonalContentSelection, 'lessonIds' | 'questionIds'>;
+
 export function initializePersonalContent(
   storage: PersonalContentStorage,
-  catalog: PersonalContentSelection,
+  catalog: PersonalContentCatalog,
+  paths: readonly LessonPath[] = [],
 ): PersonalContentSelection {
   const savedSelection = storage.getItem(PERSONAL_CONTENT_STORAGE_KEY);
   if (savedSelection !== null) {
-    return parseSelection(JSON.parse(savedSelection));
+    const selection = parseSelection(JSON.parse(savedSelection), paths);
+    storage.setItem(PERSONAL_CONTENT_STORAGE_KEY, JSON.stringify(selection));
+    return selection;
   }
 
   const isLegacyLearner = LEGACY_LEARNING_STORAGE_KEYS.some((key) => storage.getItem(key) !== null);
+  const lessonIds = isLegacyLearner ? normalizeIds(catalog.lessonIds) : [];
   const selection = isLegacyLearner
     ? {
-        lessonIds: normalizeIds(catalog.lessonIds),
+        lessonIds,
         questionIds: normalizeIds(catalog.questionIds),
+        pathIds: inferSelectedPathIds(paths, lessonIds),
       }
-    : { lessonIds: [], questionIds: [] };
+    : { lessonIds: [], questionIds: [], pathIds: [] };
 
   storage.setItem(PERSONAL_CONTENT_STORAGE_KEY, JSON.stringify(selection));
   return selection;

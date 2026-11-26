@@ -1,12 +1,10 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BeakerIcon, FireIcon } from '@heroicons/react/24/outline';
-import { curriculumPaths } from '../data/curriculumPaths';
 import { usePersonalContent } from '../hooks/usePersonalContent';
 import { useLanguage } from '../context/LanguageContext';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { LessonProgressState, getLessonCompletion, getMostRecentLessonId } from '../utils/lessonProgress';
-import { getPersonalPaths } from '../utils/personalContent';
 import Header from '../components/Header';
 import Card from '../components/Card';
 import CategoryCard from '../components/CategoryCard';
@@ -15,7 +13,7 @@ import LearningPathCard from '../components/lessons/LearningPathCard';
 
 export default function CategoriesScreen() {
   const { t } = useLanguage();
-  const { personalLessons, personalQuestions, selectedLessonIds } = usePersonalContent();
+  const { personalLessons, personalQuestions, personalPaths } = usePersonalContent();
   const [lessonProgress] = useLocalStorage<LessonProgressState>('lessonProgress', {});
   const [selectedField, setSelectedField] = useState('All');
   const questionCounts = personalQuestions.reduce<Record<string, number>>((counts, question) => {
@@ -23,7 +21,6 @@ export default function CategoriesScreen() {
     return counts;
   }, {});
   const categories = Object.entries(questionCounts).map(([id, questionCount]) => ({ id, questionCount }));
-  const paths = getPersonalPaths(curriculumPaths, selectedLessonIds);
   const fields = useMemo(
     () => ['All', ...Array.from(new Set(personalLessons.map((lesson) => lesson.field || 'General'))).sort()],
     [personalLessons],
@@ -81,7 +78,7 @@ export default function CategoriesScreen() {
           </section>
         )}
 
-        {paths.length > 0 && (
+        {personalPaths.length > 0 && (
           <section>
             <div className="mb-4">
               <p className="text-xs font-semibold uppercase tracking-wider text-secondary">Paths</p>
@@ -91,7 +88,7 @@ export default function CategoriesScreen() {
               </p>
             </div>
             <div className="grid gap-4 lg:grid-cols-2">
-              {paths.map((path) => (
+              {personalPaths.map((path) => (
                 <LearningPathCard key={path.id} path={path} lessons={personalLessons} progress={lessonProgress} />
               ))}
             </div>

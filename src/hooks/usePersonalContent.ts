@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
+import { curriculumPaths } from '../data/curriculumPaths';
 import { useLessons } from './useLessons';
 import { useLocalStorage } from './useLocalStorage';
 import { shuffle, useQuestions } from './useQuestions';
@@ -6,6 +7,8 @@ import {
   getMarketplaceLessons,
   getMarketplaceQuestions,
   getPersonalLessons,
+  getPersonalLessonIds,
+  getPersonalPaths,
   getPersonalQuestions,
   initializePersonalContent,
   PERSONAL_CONTENT_STORAGE_KEY,
@@ -14,7 +17,7 @@ import {
   toggleSelectionGroup,
 } from '../utils/personalContent';
 
-const EMPTY_SELECTION: PersonalContentSelection = { lessonIds: [], questionIds: [] };
+const EMPTY_SELECTION: PersonalContentSelection = { lessonIds: [], questionIds: [], pathIds: [] };
 
 function usePersonalCatalog() {
   const { allLessons } = useLessons();
@@ -37,14 +40,22 @@ export function usePersonalContent() {
     return initializePersonalContent(window.localStorage, {
       lessonIds: builtInLessons.map((lesson) => lesson.id),
       questionIds: builtInQuestions.map((question) => question.id),
-    });
+    }, curriculumPaths);
   });
   const [selection, setSelection] = useLocalStorage(PERSONAL_CONTENT_STORAGE_KEY, initialSelection);
-  const selectedLessonIds = useMemo(() => new Set(selection.lessonIds), [selection.lessonIds]);
+  const { lessonIds, pathIds } = selection;
+  const personalLessonIds = useMemo(
+    () => new Set(getPersonalLessonIds({ lessonIds, pathIds }, curriculumPaths)),
+    [lessonIds, pathIds],
+  );
+  const personalPaths = useMemo(
+    () => getPersonalPaths(curriculumPaths, new Set(pathIds)),
+    [pathIds],
+  );
   const selectedQuestionIds = useMemo(() => new Set(selection.questionIds), [selection.questionIds]);
   const personalLessons = useMemo(
-    () => getPersonalLessons(allLessons, selectedLessonIds),
-    [allLessons, selectedLessonIds],
+    () => getPersonalLessons(allLessons, personalLessonIds),
+    [allLessons, personalLessonIds],
   );
   const personalQuestions = useMemo(
     () => getPersonalQuestions(allQuestions, selectedQuestionIds),
@@ -63,6 +74,12 @@ export function usePersonalContent() {
     setSelection((current) => ({
       ...current,
       lessonIds: toggleSelection(current.lessonIds, id, true),
+    }));
+  };
+  const addPath = (id: string) => {
+    setSelection((current) => ({
+      ...current,
+      pathIds: toggleSelection(current.pathIds, id, true),
     }));
   };
   const removeLesson = (id: string) => {
@@ -104,9 +121,10 @@ export function usePersonalContent() {
     getQuestionsByCategory,
     getRandomQuestions,
     selection,
-    selectedLessonIds,
+    personalPaths,
     selectedQuestionIds,
     addLesson,
+    addPath,
     removeLesson,
     addQuestion,
     removeQuestion,

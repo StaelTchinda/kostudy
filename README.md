@@ -14,7 +14,7 @@ This is my attempt to reimagine what a learning app should be in the age of AI. 
 ## Live Demo
 
 - Watch on YouTube: https://youtu.be/VsXnGYEopW0?si=qPlHpDq75T32G-RJ
-- Try the preview at https://staeltchinda.github.io/kostudy/preview/github-pages-deployment/ (available after publishing the preview branch below)
+- Try the preview at https://staeltchinda.github.io/kostudy/preview/github-pages-deployment/
 
 https://github.com/user-attachments/assets/6f3066c1-657b-4e5f-b002-2f2f06004002
 
@@ -266,6 +266,8 @@ The GitHub Actions workflow builds public, AI-disabled previews for branches und
 3. Push a branch named `preview/<name>` to publish it at `https://staeltchinda.github.io/kostudy/preview/<name>/`.
 
 To stop publishing, set the variable to `false` or delete it. The Pages build does not require a Gemini key or Netlify Function. Each preview shares browser storage with other paths on the same origin; use a separate browser profile for isolated test data.
+
+To remove a preview, delete its `preview/<name>` branch. Its files are removed from Pages on the next successful preview deployment.
 
 To build and validate a preview locally, set `PAGES_BASE_PATH=/kostudy/preview/<name>/ VITE_ENABLE_AI=false npm run build:pages`. Vite's preview server does not emulate GitHub Pages' repository subpath.
 

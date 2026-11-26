@@ -1,8 +1,8 @@
 # GitHub Pages Deployment
 
 Project ID: `kostudy`
-Status: `verification`
-Temperature: `active`
+Status: `shipped`
+Temperature: `warm`
 
 ## Objective
 
@@ -24,8 +24,10 @@ Publish public, AI-disabled previews for `preview/*` branches under the reposito
 - `npm run check`, preview routing/branch/assembly tests, workflow YAML parsing, targeted ESLint, and `git diff --check` pass.
 - Browser verification against an assembled preview-only fixture confirmed `/kostudy/preview/github-pages-deployment/dashboard` survives a refresh, while `/kostudy/` shows only the intended 404.
 - The assembly test covers two preview artifacts and an empty preview list; the root output contains no app `index.html`.
-- `ENABLE_PAGES_DEPLOY` is currently `true`. There are no remote `preview/*` branches yet.
-- The `main` and `dev` remote refs were both `f1169605b39e4da13cccf83ff1c599d6c1d091d8` when checked; neither was modified.
+- `ENABLE_PAGES_DEPLOY` is currently `true`; Pages is configured for Actions and the `github-pages` environment allows `main` and `preview/*` (not `dev`).
+- The first preview at `https://staeltchinda.github.io/kostudy/preview/github-pages-deployment/` is live. Actions run `45800252264` succeeded after the environment policy was updated.
+- The `main` and `dev` remote refs remain `f1169605b39e4da13cccf83ff1c599d6c1d091d8`; the preview ref is `a50b3117878ce4d9acf2964f69160f494286cec2`.
+- The public preview deep route `/dashboard` loaded and survived a browser refresh; the root remains a 404 with no app.
 - Workflow YAML parses; `actionlint` is not installed.
 - The global registry lookup at `youssef-imlyhen/ai-workspace/projects-registry/` returned HTTP 404. The local project ID is `kostudy`; no global registry entry was changed.
 - The worktree has unrelated pre-existing changes; preserve them and commit only deployment files.
@@ -41,8 +43,8 @@ Publish public, AI-disabled previews for `preview/*` branches under the reposito
 
 ## Verification
 
-The preview artifact and nested-route behavior are verified locally. Public deployment still requires creating and pushing `preview/github-pages-deployment`; then verify the Actions run and public URL.
+The preview artifact, nested-route behavior, GitHub Actions build, Pages deployment, and public URL are verified.
 
 ## Next Action
 
-Commit the deployment-only changes on the preview branch, push it, and verify `https://staeltchinda.github.io/kostudy/preview/github-pages-deployment/`. Do not push to `main` or `dev`.
+For future previews, push a `preview/<suffix>` branch; the workflow rebuilds all active previews. Deleting a branch removes its output on the next successful preview deployment. Do not push to `main` or `dev` for this workflow.

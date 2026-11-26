@@ -30,7 +30,7 @@
 
 ## Phase 4: Preview route fallback
 
-- [ ] Task 4: Routing nested preview requests to the matching app build
+- [x] Task 4: Routing nested preview requests to the matching app build
 
 ### Checkpoint: Preview routing
 
@@ -38,9 +38,9 @@
 
 ## Phase 5: Preview-only publishing
 
-- [ ] Task 5: Combining per-branch preview artifacts
-- [ ] Task 6: Publishing and verifying `https://staeltchinda.github.io/kostudy/preview/github-pages-deployment/`
+- [x] Task 5: Combining per-branch preview artifacts
+- [x] Task 6: Publishing and verifying `https://staeltchinda.github.io/kostudy/preview/github-pages-deployment/`
 
 ### Checkpoint: Preview deployment
 
-- [ ] The artifact contains preview paths only, and `main`/`dev` refs are unchanged.
+- [x] The artifact contains preview paths only, and `main`/`dev` refs are unchanged.

@@ -49,7 +49,7 @@ Only preview builds are published; the Pages site root has no KoStudy app. Do no
 
 ### Phase 4: Preview route fallback
 
-- [ ] Task 4: Routing nested preview requests to the matching app build
+- [x] Task 4: Routing nested preview requests to the matching app build
 
 ### Checkpoint: Preview routing
 
@@ -57,12 +57,12 @@ Only preview builds are published; the Pages site root has no KoStudy app. Do no
 
 ### Phase 5: Preview-only publishing
 
-- [ ] Task 5: Combining per-branch preview artifacts
-- [ ] Task 6: Publishing and verifying the first preview URL
+- [x] Task 5: Combining per-branch preview artifacts
+- [x] Task 6: Publishing and verifying the first preview URL
 
 ### Checkpoint: Preview deployment
 
-- [ ] The artifact contains preview paths only; `main`/`dev` refs are unchanged.
+- [x] The artifact contains preview paths only; `main`/`dev` refs are unchanged.
 
 ## Task Details
 
@@ -159,9 +159,9 @@ Only preview builds are published; the Pages site root has no KoStudy app. Do no
 
 **Acceptance criteria:**
 
-- [ ] The generated Pages `404.html` distinguishes known preview base paths and otherwise renders a plain not-found message.
-- [ ] A preview deep link and refresh load the matching preview app and retain its client route.
-- [ ] No production `index.html` is emitted at the site root, including when there are no preview branches.
+- [x] The generated Pages `404.html` distinguishes known preview base paths and otherwise renders a plain not-found message.
+- [x] A preview deep link and refresh load the matching preview app and retain its client route.
+- [x] No production `index.html` is emitted at the site root, including when there are no preview branches.
 
 **Verification:**
 
@@ -186,9 +186,9 @@ Only preview builds are published; the Pages site root has no KoStudy app. Do no
 
 **Acceptance criteria:**
 
-- [ ] The Pages artifact contains all active preview branches at `/kostudy/preview/<suffix>/` and no root app.
-- [ ] Preview pushes cannot replace another branch's preview; deleting a preview branch removes its URL on the next deployment.
-- [ ] An absent/false `ENABLE_PAGES_DEPLOY` never publishes; AI remains disabled in all published builds.
+- [x] The Pages artifact contains all active preview branches at `/kostudy/preview/<suffix>/` and no root app.
+- [x] Preview pushes cannot replace another branch's preview; deleting a preview branch removes its URL on the next deployment.
+- [x] An absent/false `ENABLE_PAGES_DEPLOY` never publishes; AI remains disabled in all published builds.
 
 **Verification:**
 
@@ -206,22 +206,22 @@ Only preview builds are published; the Pages site root has no KoStudy app. Do no
 
 **Estimated scope:** Medium
 
-### Task 6: Publishing and verifying the first isolated preview URL
+### Task 6: Publishing and verifying the first preview URL
 
 **Description:** Create and publish `preview/github-pages-deployment` from the current feature work, then verify its public preview URL. Do not write to `main` or `dev`.
 
 **Acceptance criteria:**
 
-- [ ] The `preview/github-pages-deployment` branch deploys at `/kostudy/preview/github-pages-deployment/`.
-- [ ] The Pages root has no app build; the existing Netlify deployment remains unchanged.
-- [ ] Preview setup documents shared browser storage and how to remove a preview branch.
-- [ ] No changes are pushed to `main` or `dev`.
+- [x] The `preview/github-pages-deployment` branch deploys at `/kostudy/preview/github-pages-deployment/`.
+- [x] The Pages root has no app build; the existing Netlify deployment remains unchanged.
+- [x] Preview setup documents shared browser storage and how to remove a preview branch.
+- [x] No changes are pushed to `main` or `dev`.
 
 **Verification:**
 
-- [ ] Confirm `ENABLE_PAGES_DEPLOY=true` is present; do not change it unless the user approves.
-- [ ] Push only the preview branch and verify its GitHub Actions run and public URL.
-- [ ] Confirm direct route refresh works at the preview URL.
+- [x] Confirm `ENABLE_PAGES_DEPLOY=true` is present; do not change it unless the user approves.
+- [x] Push only the preview branch and verify its GitHub Actions run and public URL.
+- [x] Confirm direct route refresh works at the preview URL.
 
 **Dependencies:** Task 5
 

@@ -17,7 +17,7 @@ import ImportQuestionsModal from '../components/ImportQuestionsModal';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 import { parseAndValidate } from '../utils/import';
 import AIGenerationTab from '../components/AIGenerationTab';
-import { config } from '../config';
+import { aiFeaturesEnabled, config } from '../config';
 import { Question } from '../types/question';
 import Header from '../components/Header';
 
@@ -175,7 +175,7 @@ export default function QuestionBankScreen() {
       <Header title={t('questionBankScreen.title')} />
 
       {/* Tabs */}
-      {config.aiFeatures?.enableAIGeneration && (
+      {aiFeaturesEnabled && config.aiFeatures?.enableAIGeneration && (
         <div className="px-4 mb-4">
           <div className="tabs tabs-boxed bg-base-200/50">
             <button type="button" aria-pressed={viewMode === 'manual'} className={`tab tab-lg flex-1 ${viewMode === 'manual' ? 'tab-active !bg-primary !text-primary-content' : ''}`} onClick={() => setViewMode('manual')}>

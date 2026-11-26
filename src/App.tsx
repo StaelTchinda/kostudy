@@ -6,7 +6,7 @@ import { UserContext } from './context/UserContext';
 import { QuizContext, QuizContextType } from './context/QuizContext';
 import { ThemeProvider } from './context/ThemeContext';
 import Layout from './components/Layout';
-import { config } from './config';
+import { aiFeaturesEnabled, config } from './config';
 import CategoriesScreen from './screens/CategoriesScreen';
 import CategoryScreen from './screens/CategoryScreen';
 import LessonScreen from './screens/LessonScreen';
@@ -42,7 +42,7 @@ function App() {
       <ThemeProvider>
         <UserContext.Provider value={{ username, setUsername }}>
           <QuizContext.Provider value={{ currentQuiz, setCurrentQuiz }}>
-            <BrowserRouter>
+            <BrowserRouter basename={import.meta.env.BASE_URL}>
               <div className="relative min-h-screen w-full max-w-full overflow-x-hidden">
                 <AchievementNotification />
                 <Routes>
@@ -51,7 +51,8 @@ function App() {
                   <Route path="/categories" element={<Layout><CategoriesScreen /></Layout>} />
                   <Route path="/categories/marketplace" element={<Layout><MarketplaceScreen /></Layout>} />
                   <Route path="/categories/:categoryId" element={<Layout><CategoryScreen /></Layout>} />
-                  <Route path="/lessons/new" element={<Layout><LessonCreatorScreen /></Layout>} />
+                  {aiFeaturesEnabled && <Route path="/lessons/new" element={<Layout><LessonCreatorScreen /></Layout>} />}
+                  {!aiFeaturesEnabled && <Route path="/lessons/new" element={<Navigate to="/categories" replace />} />}
                   <Route path="/lessons/:lessonId" element={<Layout><LessonScreen /></Layout>} />
                   <Route path="/quiz" element={<Layout hideNav><QuizScreen /></Layout>} />
                   <Route path="/play-all" element={<Layout hideNav><QuizScreen /></Layout>} />
@@ -66,9 +67,9 @@ function App() {
                   <Route path="/about" element={<Layout><AboutScreen /></Layout>} />
                   <Route path="/contact" element={<Layout><ContactScreen /></Layout>} />
                   <Route path="/share" element={<Layout><ShareScreen /></Layout>} />
-                  <Route path="/chat" element={<Layout><ChatScreen /></Layout>} />
-                  <Route path="/sagalearn" element={<Layout><SagaLearnScreen /></Layout>} />
-                  <Route path="/ai-generator" element={<Layout><AIGeneratorScreen /></Layout>} />
+                  {aiFeaturesEnabled && <Route path="/chat" element={<Layout><ChatScreen /></Layout>} />}
+                  {aiFeaturesEnabled && <Route path="/sagalearn" element={<Layout><SagaLearnScreen /></Layout>} />}
+                  {aiFeaturesEnabled && <Route path="/ai-generator" element={<Layout><AIGeneratorScreen /></Layout>} />}
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </div>

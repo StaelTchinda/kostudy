@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAchievements } from '../hooks/useAchievements';
 import { useLanguage } from '../context/LanguageContext';
 import { ChevronRightIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
@@ -126,9 +127,9 @@ export default function AchievementNotification({ onNotificationClose }: Achieve
 
         {/* Actions */}
         <div className="mt-3 flex items-center justify-end gap-2">
-          <a href="/achievements" className="inline-flex items-center text-xs font-bold text-white/95 hover:text-white">
+          <Link to="/achievements" className="inline-flex items-center text-xs font-bold text-white/95 hover:text-white">
             {t('dashboard.achievements')} <ChevronRightIcon className="w-4 h-4 ml-0.5" />
-          </a>
+          </Link>
         </div>
 
         {/* Auto-hide progress bar */}

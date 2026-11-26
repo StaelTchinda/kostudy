@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:pages": "npm run build && node scripts/create-pages-fallback.mjs && npm run validate:pages-build && npm run validate:ai-pages-build",
     "lint": "eslint .",
     "test": "node --experimental-strip-types --test tests/*.test.ts",
     "validate:lesson-ux": "node scripts/validate-lesson-ux.mjs",
@@ -14,7 +15,9 @@
     "build-pwa": "npm run generate-icons && tsc -b && vite build",
     "validate:learning": "node scripts/validate-learning-labs.mjs",
     "check": "npm run validate:lesson-ux && npm run validate:learning && npm run validate:interactions && npm run build",
-    "validate:interactions": "node scripts/validate-interactions.mjs"
+    "validate:interactions": "node scripts/validate-interactions.mjs",
+    "validate:pages-build": "node scripts/validate-pages-build.mjs",
+    "validate:ai-pages-build": "node scripts/validate-ai-pages-build.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.0.1",

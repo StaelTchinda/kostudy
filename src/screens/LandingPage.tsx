@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { aiFeaturesEnabled } from '../config';
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -15,7 +16,7 @@ export default function LandingPage() {
 
     // Auto-rotate screenshots
     const interval = setInterval(() => {
-      setCurrentScreenshot((prev) => (prev + 1) % 13);
+      setCurrentScreenshot((prev) => (prev + 1) % (aiFeaturesEnabled ? 13 : 9));
     }, 3500);
 
     return () => {
@@ -32,18 +33,22 @@ export default function LandingPage() {
   const screenshots = [
     { id: 1, src: "/assets/screenshots/frame_005_15.23s.jpg", title: "Dashboard Overview", description: "Get a comprehensive view of your learning progress" },
     { id: 2, src: "/assets/screenshots/frame_006_64.34s.jpg", title: "Quiz Interface", description: "Interactive quizzes with multiple question types" },
-    { id: 3, src: "/assets/screenshots/frame_008_80.42s.jpg", title: "AI Chat Assistant", description: "Get instant help and explanations from our AI" },
+    { id: 3, src: "/assets/screenshots/frame_008_80.42s.jpg", title: "AI Chat Assistant", description: "Get instant help and explanations from our AI", aiOnly: true },
     { id: 4, src: "/assets/screenshots/frame_009_28.95s.jpg", title: "Learning Analytics", description: "Track your progress with detailed insights" },
     { id: 5, src: "/assets/screenshots/frame_012_112.59s.jpg", title: "Category Selection", description: "Browse and select from various learning categories" },
     { id: 6, src: "/assets/screenshots/frame_015_43.43s.jpg", title: "Quiz Results", description: "Detailed feedback on your performance" },
     { id: 7, src: "/assets/screenshots/frame_022_104.55s.jpg", title: "Achievements", description: "Earn badges and rewards as you progress" },
     { id: 8, src: "/assets/screenshots/frame_023_67.56s.jpg", title: "Mistakes Review", description: "Review and learn from your mistakes" },
     { id: 9, src: "/assets/screenshots/frame_023_112.59s.jpg", title: "Settings", description: "Customize your learning experience" },
-    { id: 10, src: "/assets/screenshots/frame_040_115.81s.jpg", title: "AI Question Generation", description: "Generate questions on any topic with AI" },
-    { id: 11, src: "/assets/screenshots/frame_041_118.64s.jpg", title: "SagaLearn Adventure", description: "Interactive choose-your-own-adventure learning" },
-    { id: 12, src: "/assets/screenshots/frame_046_132.42s.jpg", title: "AI App Studio", description: "Create custom learning apps with AI" },
+    { id: 10, src: "/assets/screenshots/frame_040_115.81s.jpg", title: "AI Question Generation", description: "Generate questions on any topic with AI", aiOnly: true },
+    { id: 11, src: "/assets/screenshots/frame_041_118.64s.jpg", title: "SagaLearn Adventure", description: "Interactive choose-your-own-adventure learning", aiOnly: true },
+    { id: 12, src: "/assets/screenshots/frame_046_132.42s.jpg", title: "AI App Studio", description: "Create custom learning apps with AI", aiOnly: true },
     { id: 13, src: "/assets/screenshots/frame_048_139.32s.jpg", title: "Performance Chart", description: "Visualize your learning progress over time" }
   ];
+  const visibleScreenshots = screenshots
+    .filter((screenshot) => aiFeaturesEnabled || !screenshot.aiOnly)
+    .map((screenshot) => ({ ...screenshot, src: `${import.meta.env.BASE_URL}${screenshot.src.slice(1)}` }));
+  const activeScreenshotIndex = currentScreenshot % visibleScreenshots.length;
 
   // AI features (detailed, accurate per README)
   const aiFeatures = [
@@ -233,7 +238,7 @@ export default function LandingPage() {
     { name: "Tailwind CSS", icon: "🎨", color: "text-cyan-500" },
     { name: "Vite", icon: "⚡", color: "text-yellow-500" },
     { name: "daisyUI", icon: "🌸", color: "text-pink-500" },
-    { name: "Google Gemini API", icon: "🔮", color: "text-purple-500" }
+    ...(aiFeaturesEnabled ? [{ name: "Google Gemini API", icon: "🔮", color: "text-purple-500" }] : [])
   ];
 
   return (
@@ -255,7 +260,7 @@ export default function LandingPage() {
           <div className="flex items-center">
             <div className="bg-gradient-to-br from-primary to-accent p-[2px] rounded-xl">
               <div className="bg-base-100 rounded-lg p-2">
-                <img src="/kostudy.png" alt="Kostudy logo" className="w-9 h-9 rounded-lg" />
+                <img src={`${import.meta.env.BASE_URL}kostudy.png`} alt="Kostudy logo" className="w-9 h-9 rounded-lg" />
               </div>
             </div>
             <span className="ml-2 text-xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
@@ -312,23 +317,26 @@ export default function LandingPage() {
                   <div className="absolute inset-0 bg-gradient-to-r from-primary to-accent rounded-3xl blur-xl opacity-25 animate-pulse"></div>
                   <div className="bg-gradient-to-br from-primary to-accent p-1 rounded-3xl shadow-xl relative">
                     <div className="bg-base-100 rounded-2xl p-4">
-                      <img src="/kostudy.png" alt="Kostudy logo" className="w-20 h-20 rounded-2xl" />
+                      <img src={`${import.meta.env.BASE_URL}kostudy.png`} alt="Kostudy logo" className="w-20 h-20 rounded-2xl" />
                     </div>
                   </div>
                 </div>
               </div>
 
               <h1 className="text-4xl md:text-5xl font-extrabold mb-3 bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
-                AI‑First Learning, Built Right
+                {aiFeaturesEnabled ? 'AI‑First Learning, Built Right' : 'Thoughtful Learning, Built Right'}
               </h1>
 
               <p className="text-lg md:text-xl font-semibold mb-3 text-base-content">
-                Personalized quizzes, interactive modes, chat and voice—powered by the Google Gemini API.
+                {aiFeaturesEnabled
+                  ? 'Personalized quizzes, interactive modes, chat and voice—powered by the Google Gemini API.'
+                  : 'Build understanding with interactive lessons, quizzes, and progress tracking.'}
               </p>
 
               <p className="text-base md:text-lg mb-8 max-w-2xl mx-auto text-base-content/80">
-                Bring your own materials (videos, PDFs, audio, links). Kostudy generates targeted questions and explanations,
-                tracks progress, and keeps you engaged with achievements and narrative learning.
+                {aiFeaturesEnabled
+                  ? 'Bring your own materials (videos, PDFs, audio, links). Kostudy generates targeted questions and explanations, tracks progress, and keeps you engaged with achievements and narrative learning.'
+                  : 'Practice with built-in lessons and questions, track your progress, and keep learning at your own pace.'}
               </p>
 
               <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mx-auto">
@@ -375,25 +383,25 @@ export default function LandingPage() {
               <div className="relative" ref={carouselRef}>
                 <div className="relative h-[420px] rounded-2xl overflow-hidden shadow-xl border-8 border-base-100">
                   <img
-                    src={screenshots[currentScreenshot].src}
-                    alt={screenshots[currentScreenshot].title}
+                    src={visibleScreenshots[activeScreenshotIndex].src}
+                    alt={visibleScreenshots[activeScreenshotIndex].title}
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
-                    <h3 className="text-xl md:text-2xl font-bold text-white">{screenshots[currentScreenshot].title}</h3>
-                    <p className="text-white/90 text-sm md:text-base">{screenshots[currentScreenshot].description}</p>
+                    <h3 className="text-xl md:text-2xl font-bold text-white">{visibleScreenshots[activeScreenshotIndex].title}</h3>
+                    <p className="text-white/90 text-sm md:text-base">{visibleScreenshots[activeScreenshotIndex].description}</p>
                   </div>
                 </div>
 
                 {/* Thumbnails */}
                 <div className="mt-6 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-3">
-                  {screenshots.map((screenshot, index) => (
+                  {visibleScreenshots.map((screenshot, index) => (
                     <button
                       aria-label={`Show ${screenshot.title}`}
                       key={screenshot.id}
                       onClick={() => setCurrentScreenshot(index)}
                       className={`cursor-pointer rounded-xl overflow-hidden shadow-md border-2 transition-all duration-300 ${
-                        index === currentScreenshot
+                        index === activeScreenshotIndex
                           ? 'border-primary scale-[1.03] shadow-primary/30'
                           : 'border-base-200 hover:border-primary/50'
                       }`}
@@ -418,29 +426,31 @@ export default function LandingPage() {
               <h2 className="text-3xl md:text-4xl font-bold mb-10 text-center">Powerful, Practical Features</h2>
 
               {/* AI features */}
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {aiFeatures.map((feature, index) => (
-                  <div
-                    key={index}
-                    className="relative bg-base-100 rounded-2xl shadow-lg p-6 border border-base-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden"
-                  >
-                    <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} pointer-events-none`}></div>
-                    <div className="relative z-10 flex flex-col h-full">
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className="text-3xl">{feature.icon}</div>
-                        <h3 className="text-xl font-bold">{feature.title}</h3>
+              {aiFeaturesEnabled && (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {aiFeatures.map((feature, index) => (
+                    <div
+                      key={index}
+                      className="relative bg-base-100 rounded-2xl shadow-lg p-6 border border-base-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden"
+                    >
+                      <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} pointer-events-none`}></div>
+                      <div className="relative z-10 flex flex-col h-full">
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="text-3xl">{feature.icon}</div>
+                          <h3 className="text-xl font-bold">{feature.title}</h3>
+                        </div>
+                        <p className="text-sm text-base-content/70 mb-3">{feature.subtitle}</p>
+                        <p className="text-base-content/80 text-sm md:text-[0.95rem] leading-relaxed">{feature.description}</p>
+                        <ul className="mt-4 space-y-1.5 text-sm text-base-content/70 list-disc list-inside">
+                          {feature.bullets.map((b, i) => (
+                            <li key={i}>{b}</li>
+                          ))}
+                        </ul>
                       </div>
-                      <p className="text-sm text-base-content/70 mb-3">{feature.subtitle}</p>
-                      <p className="text-base-content/80 text-sm md:text-[0.95rem] leading-relaxed">{feature.description}</p>
-                      <ul className="mt-4 space-y-1.5 text-sm text-base-content/70 list-disc list-inside">
-                        {feature.bullets.map((b, i) => (
-                          <li key={i}>{b}</li>
-                        ))}
-                      </ul>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
 
               {/* Core features */}
               <h3 className="text-2xl font-bold mt-12 mb-6 text-center">Core Quiz & Platform</h3>
@@ -478,12 +488,14 @@ export default function LandingPage() {
               <h2 className="text-3xl md:text-4xl font-bold mb-6 text-center">Why Kostudy</h2>
               <div className="prose max-w-none">
                 <p className="mb-4 text-base-content/90">
-                  Most learning tools either lean on shallow gamification or bolt a chatbot onto a dated quiz. Kostudy is different:
-                  an AI‑first, open‑source platform that uses modern web tech (React, TypeScript, Tailwind) and the Google Gemini API
-                  to deliver context‑aware learning that actually helps you remember, understand, and apply.
+                  {aiFeaturesEnabled
+                    ? 'Most learning tools either lean on shallow gamification or bolt a chatbot onto a dated quiz. Kostudy is different: an AI‑first, open‑source platform that uses modern web tech (React, TypeScript, Tailwind) and the Google Gemini API to deliver context‑aware learning that actually helps you remember, understand, and apply.'
+                    : 'Kostudy is an open-source learning app built with React, TypeScript, and Tailwind. It combines interactive lessons, quizzes, and progress tools to help you remember, understand, and apply what you learn.'}
                 </p>
                 <p className="mb-0 text-base-content/90">
-                  It’s a reimagining of what an education app should be in the age of AI—practical, extensible, and fun to use.
+                  {aiFeaturesEnabled
+                    ? 'It’s a reimagining of what an education app should be in the age of AI—practical, extensible, and fun to use.'
+                    : 'It’s a practical, extensible, and fun way to study at your own pace.'}
                 </p>
               </div>
             </div>
@@ -544,7 +556,9 @@ export default function LandingPage() {
               <div className="relative z-10">
                 <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Transform Your Learning?</h2>
                 <p className="text-base md:text-lg mb-6 max-w-2xl mx-auto text-base-content/90">
-                  Install as a PWA, import your materials, and start learning with AI today.
+                  {aiFeaturesEnabled
+                    ? 'Install as a PWA, import your materials, and start learning with AI today.'
+                    : 'Install as a PWA and start learning with lessons and quizzes today.'}
                 </p>
                 <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mx-auto">
                   <button onClick={handleGetStarted} className="btn btn-primary btn-md">Start Free</button>
@@ -570,7 +584,7 @@ export default function LandingPage() {
                 <div className="flex items-center mb-4">
                   <div className="bg-gradient-to-br from-primary to-accent p-[2px] rounded-xl">
                     <div className="bg-base-100 rounded-lg p-2">
-                      <img src="/kostudy.png" alt="Kostudy logo" className="w-8 h-8 rounded-lg" />
+                      <img src={`${import.meta.env.BASE_URL}kostudy.png`} alt="Kostudy logo" className="w-8 h-8 rounded-lg" />
                     </div>
                   </div>
                   <span className="ml-2 text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
@@ -578,16 +592,22 @@ export default function LandingPage() {
                   </span>
                 </div>
                 <p className="text-base-content/80 text-sm">
-                  AI‑powered, open‑source learning for the future of education.
+                  {aiFeaturesEnabled
+                    ? 'AI‑powered, open‑source learning for the future of education.'
+                    : 'Open-source learning with interactive lessons and quizzes.'}
                 </p>
               </div>
 
               <div>
                 <h3 className="text-base font-bold mb-4">Features</h3>
                 <ul className="space-y-2 text-sm">
-                  <li><a href="#features" className="text-base-content/80 hover:text-primary transition-colors">AI Question Generation</a></li>
-                  <li><a href="#features" className="text-base-content/80 hover:text-primary transition-colors">AI Chat Assistant</a></li>
-                  <li><a href="#features" className="text-base-content/80 hover:text-primary transition-colors">SagaLearn Adventure</a></li>
+                  {aiFeaturesEnabled && (
+                    <>
+                      <li><a href="#features" className="text-base-content/80 hover:text-primary transition-colors">AI Question Generation</a></li>
+                      <li><a href="#features" className="text-base-content/80 hover:text-primary transition-colors">AI Chat Assistant</a></li>
+                      <li><a href="#features" className="text-base-content/80 hover:text-primary transition-colors">SagaLearn Adventure</a></li>
+                    </>
+                  )}
                   <li><a href="#features" className="text-base-content/80 hover:text-primary transition-colors">Achievements & Analytics</a></li>
                 </ul>
               </div>

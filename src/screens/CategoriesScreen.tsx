@@ -10,6 +10,7 @@ import Card from '../components/Card';
 import CategoryCard from '../components/CategoryCard';
 import LessonCard from '../components/lessons/LessonCard';
 import LearningPathCard from '../components/lessons/LearningPathCard';
+import { aiFeaturesEnabled } from '../config';
 
 export default function CategoriesScreen() {
   const { t } = useLanguage();
@@ -101,7 +102,7 @@ export default function CategoriesScreen() {
               <p className="text-xs font-semibold uppercase tracking-wider text-primary">Lessons</p>
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <h2 className="mt-1 text-xl font-bold">Understand before you drill</h2>
-                <Link to="/lessons/new" className="btn btn-primary btn-sm">Create lesson</Link>
+                {aiFeaturesEnabled && <Link to="/lessons/new" className="btn btn-primary btn-sm">Create lesson</Link>}
               </div>
               <p className="mt-1 max-w-2xl text-sm leading-6 text-base-content/65">
                 Lessons you chose and lessons you created.

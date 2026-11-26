@@ -21,6 +21,7 @@ import Header from '../components/Header';
 import Card from '../components/Card';
 import CategoryCard from '../components/CategoryCard';
 import LessonCard from '../components/lessons/LessonCard';
+import { aiFeaturesEnabled } from '../config';
 
 export default function DashboardScreen() {
   const { t } = useLanguage();
@@ -167,7 +168,7 @@ export default function DashboardScreen() {
             <summary className="cursor-pointer list-none p-4 font-semibold">More tools</summary>
             <div className="grid gap-3 border-t border-base-200 p-4 sm:grid-cols-3">
               <Link to="/achievements" className="rounded-2xl bg-base-200/60 p-4"><TrophyIcon className="h-5 w-5 text-warning" /><div className="mt-2 font-semibold">Progress</div></Link>
-              <Link to="/sagalearn" className="rounded-2xl bg-base-200/60 p-4"><SparklesIcon className="h-5 w-5 text-secondary" /><div className="mt-2 font-semibold">SagaLearn</div></Link>
+              {aiFeaturesEnabled && <Link to="/sagalearn" className="rounded-2xl bg-base-200/60 p-4"><SparklesIcon className="h-5 w-5 text-secondary" /><div className="mt-2 font-semibold">SagaLearn</div></Link>}
               <Link to="/questions" className="rounded-2xl bg-base-200/60 p-4"><WrenchScrewdriverIcon className="h-5 w-5 text-info" /><div className="mt-2 font-semibold">Question bank</div></Link>
             </div>
           </details>

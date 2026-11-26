@@ -1,27 +1,21 @@
 import { useNavigate } from 'react-router-dom';
-import { TrophyIcon, GlobeAmericasIcon, SparklesIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import { Link } from 'react-router-dom';
+import { BookOpenIcon, ChartBarIcon, TrophyIcon, GlobeAmericasIcon, SparklesIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import { useUser } from '../context/UserContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useLocalStorage } from '../hooks/useLocalStorage';
-import { useQuestions } from '../hooks/useQuestions';
+import { usePersonalContent } from '../hooks/usePersonalContent';
 import { Mistakes, getTotalUniqueMistakes } from '../utils/mistakes';
 import { useAchievements } from '../hooks/useAchievements';
 import { ACHIEVEMENT_TIER_KEYS, Achievement } from '../types/achievement';
 import Header from '../components/Header';
 import StatCard from '../components/StatCard';
 import PerformanceChart from '../components/PerformanceChart';
-import EmptyState from '../components/EmptyState';
 import MasteryOverview from '../components/MasteryOverview';
 import { achievements as achievementCatalog } from '../data/achievements';
-
-interface Progress {
-  [key: string]: {
-    [key: string]: {
-      completed: number;
-      correct: number;
-    };
-  };
-}
+import { LearningState } from '../utils/learningState';
+import { LessonProgressState } from '../utils/lessonProgress';
+import { buildLessonProgressSummary, buildQuestionTopicPerformance } from '../utils/personalProgress';
 
 export interface CategoryColor {
   bg: string;
@@ -35,7 +29,7 @@ export interface CategoryPerformance {
   color: CategoryColor;
   completed: number;
   total: number;
-  correct: number;
+  accuracy: number;
 }
 
 // Consistent styling for categories to avoid the "all green" issue
@@ -185,36 +179,25 @@ export default function AchievementsScreen() {
   const { username } = useUser();
   const { t } = useLanguage();
   const { getAchievementStats, getUnlockedAchievements } = useAchievements();
-  const { getCategories, getQuestionsByCategory } = useQuestions();
-  const [progress] = useLocalStorage<Progress>('quizProgress', {});
+  const { personalQuestions, personalLessons } = usePersonalContent();
+  const [learningState] = useLocalStorage<LearningState>('questionLearningState', {});
+  const [lessonProgress] = useLocalStorage<LessonProgressState>('lessonProgress', {});
   const [mistakes] = useLocalStorage<Mistakes>('quizMistakes', {});
-  // Calculate performance data
-  // Calculate performance data
-  const categories = getCategories();
-  const performanceData: CategoryPerformance[] = categories.map((categoryId, index) => {
-    const questions = getQuestionsByCategory(categoryId);
-    const total = questions.length;
-    const categoryProgress = progress[categoryId] || {};
-    const completedRaw = Object.values(categoryProgress).reduce(
-      (sum, diff) => sum + diff.completed, 0
-    );
-    const correctRaw = Object.values(categoryProgress).reduce(
-      (sum, diff) => sum + diff.correct, 0
-    );
-    const completed = Math.min(completedRaw, total);
-    const correct = Math.min(correctRaw, completed);
+  const questionTopicProgress = buildQuestionTopicPerformance(personalQuestions, learningState);
+  const performanceData: CategoryPerformance[] = questionTopicProgress.map((topic, index) => {
     const color = getCategoryStyle(index);
     return {
-      name: categoryId.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+      name: topic.topic,
       color,
-      completed,
-      total,
-      correct,
+      completed: topic.practicedQuestions,
+      total: topic.totalQuestions,
+      accuracy: topic.accuracy,
     };
-  }).filter(category => category.total > 0);
-
-  const totalCompleted = performanceData.reduce((sum, cat) => sum + cat.completed, 0);
-  const totalCorrect = performanceData.reduce((sum, cat) => sum + cat.correct, 0);
+  });
+  const practicedQuestions = questionTopicProgress.reduce((sum, topic) => sum + topic.practicedQuestions, 0);
+  const totalQuestionAttempts = questionTopicProgress.reduce((sum, topic) => sum + topic.attempts, 0);
+  const totalCorrectAttempts = questionTopicProgress.reduce((sum, topic) => sum + topic.correctAttempts, 0);
+  const lessonSummary = buildLessonProgressSummary(personalLessons, lessonProgress);
   const totalMistakes = getTotalUniqueMistakes(mistakes);
   const achievementStats = getAchievementStats();
 
@@ -239,63 +222,83 @@ export default function AchievementsScreen() {
         </div>
       </div>
 
-      {/* Stats Cards */}
+      {personalLessons.length + personalQuestions.length === 0 && (
+        <section className="mx-4 mb-6 rounded-2xl border border-base-300 bg-base-100 p-5">
+          <h2 className="font-bold">Your Learn space is empty</h2>
+          <p className="mt-1 text-sm text-base-content/65">Add a topic or lesson to see progress here.</p>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <Link to="/categories/marketplace" className="btn btn-primary btn-sm">Browse Marketplace</Link>
+            <Link to="/questions" className="btn btn-ghost btn-sm">Add custom questions</Link>
+          </div>
+        </section>
+      )}
+
+      {/* Personal learning stats */}
       <div className="grid grid-cols-3 gap-4 px-4 mb-8">
         <StatCard
-          icon={<SparklesIcon className="w-6 h-6" />}
-          label={t('achievementsScreen.points')}
-          value={achievementStats.points}
-          color="accent"
+          icon={<BookOpenIcon className="w-6 h-6" />}
+          label="Questions practiced"
+          value={personalQuestions.length ? `${practicedQuestions} / ${personalQuestions.length}` : '—'}
+          color="info"
         />
         <StatCard
-          icon={<TrophyIcon className="w-6 h-6" />}
-          label={t('achievementsScreen.correctAnswers')}
-          value={`${Math.round((totalCorrect / totalCompleted) * 100 || 0)}%`}
+          icon={<ChartBarIcon className="w-6 h-6" />}
+          label="Learning accuracy"
+          value={totalQuestionAttempts ? `${Math.round(totalCorrectAttempts / totalQuestionAttempts * 100)}%` : '—'}
           color="success"
         />
         <StatCard
           icon={<GlobeAmericasIcon className="w-6 h-6" />}
-          label={t('achievementsScreen.completed')}
-          value={`${achievementStats.percentage}%`}
+          label="Lessons completed"
+          value={personalLessons.length ? `${lessonSummary.completedLessons} / ${lessonSummary.totalLessons}` : '—'}
           color="info"
         />
       </div>
 
       <MasteryOverview />
 
-      {/* Performance Chart */}
-      {performanceData.length > 0 ? (
+      {performanceData.length > 0 && (
         <PerformanceChart performanceData={performanceData} />
-      ) : (
-        <EmptyState
-          title="achievementsScreen.noPerformance"
-          message="achievementsScreen.noPerformance"
-          buttonText="dashboard.startQuiz"
-          navigateTo="/"
-        />
       )}
 
-      {/* Achievements Section */}
-      <div className="px-4 mt-8">
-        <h2 className="text-xl font-bold text-base-content mb-4">{t('achievementsScreen.title')}</h2>
+      {personalLessons.length > 0 && (
+        <section className="mx-4 mt-6 rounded-2xl border border-base-300 bg-base-100 p-5">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="font-bold">Lesson progress in Learn</h2>
+            <span className="text-sm text-base-content/65">
+              {lessonSummary.completedLessons} / {lessonSummary.totalLessons} complete
+            </span>
+          </div>
+          <p className="mt-1 text-sm text-base-content/60">{lessonSummary.startedLessons} started</p>
+        </section>
+      )}
+
+      {/* All-time achievements */}
+      <section className="px-4 mt-8">
+        <h2 className="text-xl font-bold text-base-content mb-2">All-time achievements</h2>
+        <p className="mb-4 text-sm text-base-content/60">Rewards earned across your full learning history, independent of your current Learn selections.</p>
         
         {/* Achievement Stats */}
-        <div className="bg-base-100 rounded-2xl p-4 shadow-lg mb-6 border-2 border-b-4 border-base-300">
+        <div className="grid grid-cols-2 gap-4 bg-base-100 rounded-2xl p-4 shadow-lg mb-6 border-2 border-b-4 border-base-300">
+          <div className="flex justify-between items-center">
+            <div>
+              <p className="text-sm text-base-content/70">{t('achievementsScreen.points')}</p>
+              <p className="text-2xl font-bold text-accent">{achievementStats.points}</p>
+            </div>
+            <SparklesIcon className="h-7 w-7 text-accent" />
+          </div>
           <div className="flex justify-between items-center">
             <div>
               <p className="text-sm text-base-content/70">{t('achievementsScreen.unlocked')}</p>
               <p className="text-2xl font-bold text-primary">{achievementStats.unlocked} / {achievementStats.total}</p>
             </div>
-            <div className="text-right">
-              <p className="text-sm text-base-content/70">{t('achievementsScreen.progress')}</p>
-              <p className="text-2xl font-bold text-accent">{achievementStats.percentage}%</p>
-            </div>
+            <TrophyIcon className="h-7 w-7 text-warning" />
           </div>
         </div>
 
         {/* Achievement Path - replaces the old achievements grid */}
         <AchievementPath all={achievementCatalog} unlockedMap={unlockedMap} t={t} />
-      </div>
+      </section>
 
       {/* Practice Mistakes Button */}
       {totalMistakes > 0 && (
@@ -304,7 +307,7 @@ export default function AchievementsScreen() {
             onClick={() => navigate('/mistakes')}
             className="btn btn-primary rounded-2xl font-bold border-2 border-b-4 w-full"
           >
-            {t('achievementsScreen.practiceMistakes', { count: totalMistakes })}
+            Practice all-time mistakes ({totalMistakes})
           </button>
         </div>
       )}

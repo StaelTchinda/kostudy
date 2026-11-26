@@ -18,6 +18,7 @@ export default function PerformanceChart({ performanceData }: PerformanceChartPr
 
   return (
     <div className="bg-base-100 rounded-2xl p-6 mx-4 shadow-lg border-2 border-b-4 border-base-300">
+      <h2 className="mb-5 text-lg font-bold text-base-content">Question practice by topic</h2>
       <div className="flex gap-4 mb-4 flex-wrap">
         {performanceData.map((category) => (
           <div key={category.name} className="flex items-center">
@@ -29,7 +30,7 @@ export default function PerformanceChart({ performanceData }: PerformanceChartPr
       <div className="space-y-6">
         {performanceData.map((category) => {
           const percentage = (category.completed / category.total) * 100;
-          const accuracy = (category.correct / category.completed) * 100 || 0;
+          const accuracy = category.accuracy;
           return (
             <div key={category.name} className="transition-transform duration-200 hover:scale-[1.02]">
               <div className="flex justify-between mb-2 items-center">

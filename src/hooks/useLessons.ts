@@ -15,7 +15,7 @@ const inferField = (lesson: Lesson): string => {
 
 assertValidCurriculum(validateLessonCatalog(crossDomainLessons), 'Cross-domain lesson pack');
 
-const builtInLessons: Lesson[] = [...legacyBuiltInLessons, ...crossDomainLessons].map((lesson) => ({
+export const builtInLessons: Lesson[] = [...legacyBuiltInLessons, ...crossDomainLessons].map((lesson) => ({
   ...lesson,
   field: inferField(lesson),
   origin: lesson.origin || 'built-in',

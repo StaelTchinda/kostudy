@@ -1,50 +1,47 @@
 # GitHub Pages Deployment
 
 Project ID: `kostudy`
-Status: `shipped`
+Status: `active`
 Temperature: `warm`
 
 ## Objective
 
-Publish public, AI-disabled previews for `preview/*` branches under the repository's GitHub Pages path. Do not modify `main` or `dev`; the Pages root intentionally contains no KoStudy app, and the existing Netlify deployment is unaffected.
+Publish the AI-disabled main app from `main` at `https://staeltchinda.github.io/kostudy/` and active `preview/*` branches under `/kostudy/preview/<branch>/`, assembled into one GitHub Pages artifact. Do not change Netlify.
 
 ## Approved Scope
 
-- GitHub Actions discovers all active `preview/*` branches and assembles their builds into one Pages artifact.
-- A branch `preview/<suffix>` is served at `/kostudy/preview/<suffix>/`; deep routes are restored through a top-level 404 router.
-- Each preview build sets `VITE_ENABLE_AI=false`; other builds retain existing behavior.
-- Only preview paths and a minimal root 404 page are published. No production app is built from `main` or `dev`.
-- Deployment requires the Actions repository variable `ENABLE_PAGES_DEPLOY=true`.
-- Preview paths share browser storage with each other. Netlify is on a different origin.
-- No custom domain, authentication, account sync, or AI backend.
+- Build main from the `main` ref and previews from active `preview/*` refs.
+- Publish main and previews together so separate updates cannot replace one another's files.
+- Preserve per-build Vite router, PWA manifest, and service-worker base paths.
+- Restore deep routes for both main and preview apps through the top-level Pages fallback.
+- Disable AI features for every Pages build.
+- Trigger publishing on main and preview branch updates, gated by `ENABLE_PAGES_DEPLOY=true` and the existing `github-pages` environment.
+- Do not merge or deploy during preparation; those actions require separate authorization.
 
-## Current Evidence
+## Prior Deployment Evidence
 
-- `PAGES_BASE_PATH=/kostudy/preview/github-pages-deployment/ VITE_ENABLE_AI=false npm run build:pages` passes, including PWA-path and AI-bundle validators.
-- `npm run check`, preview routing/branch/assembly tests, workflow YAML parsing, targeted ESLint, and `git diff --check` pass.
-- Browser verification against an assembled preview-only fixture confirmed `/kostudy/preview/github-pages-deployment/dashboard` survives a refresh, while `/kostudy/` shows only the intended 404.
-- The assembly test covers two preview artifacts and an empty preview list; the root output contains no app `index.html`.
-- `ENABLE_PAGES_DEPLOY` is currently `true`; Pages is configured for Actions and the `github-pages` environment allows `main` and `preview/*` (not `dev`).
-- The first preview at `https://staeltchinda.github.io/kostudy/preview/github-pages-deployment/` is live. Actions run `45800252264` succeeded after the environment policy was updated.
-- The `main` and `dev` remote refs remain `f1169605b39e4da13cccf83ff1c599d6c1d091d8`; the preview ref is `a50b3117878ce4d9acf2964f69160f494286cec2`.
-- The public preview deep route `/dashboard` loaded and survived a browser refresh; the root remains a 404 with no app.
-- Workflow YAML parses; `actionlint` is not installed.
-- The global registry lookup at `youssef-imlyhen/ai-workspace/projects-registry/` returned HTTP 404. The local project ID is `kostudy`; no global registry entry was changed.
-- The worktree has unrelated pre-existing changes; preserve them and commit only deployment files.
+- The previous workflow published previews only and left the Pages root as a 404.
+- The preview URL `https://staeltchinda.github.io/kostudy/preview/github-pages-deployment/` was live.
+- The prior workflow run `45801421420` completed successfully for the preview documentation branch.
+- Pages uses the repository path `/kostudy/`; the app is not intended for the account root.
 
-## Decisions
+## Current Implementation
 
-- Specs: `docs/ideas/github-pages-deployment.md`, `docs/ideas/github-pages-preview-delta.md`
-- Plan: `tasks/plan.md`
-- Tasks: `tasks/todo.md`
-- Use `VITE_ENABLE_AI=false` for Pages builds, defaulting to current behavior elsewhere.
-- Gate publishing on `vars.ENABLE_PAGES_DEPLOY == 'true'`; do not treat it as a secret.
-- Build and publish preview paths only. The site root remains a 404 and the current Netlify deployment is not changed.
+- The workflow builds main at `/kostudy/` and each preview at its own nested path, then assembles one artifact.
+- The top-level fallback routes deep links to the correct app base, preferring the longest matching preview path.
+- Deployment is serialized and restricted to `main` or `preview/*` workflow refs.
+- The existing `preview/github-pages-deployment` ref still has the old preview-only workflow; a separate draft sync PR must update it before future pushes to that ref.
+- Root and nested build validation and artifact assembly tests are included.
 
 ## Verification
 
-The preview artifact, nested-route behavior, GitHub Actions build, Pages deployment, and public URL are verified.
+- `npm run test:pages-preview` passes, including main-route fallback and root-plus-preview artifact assembly.
+- `PAGES_BASE_PATH=/kostudy/ VITE_ENABLE_AI=false npm run build:pages` passes.
+- `PAGES_BASE_PATH=/kostudy/preview/github-pages-deployment/ VITE_ENABLE_AI=false npm run build:pages` passes.
+- Builds emit existing Tailwind utility and large-chunk warnings; no new build errors were observed.
+- No GitHub Pages deployment has been triggered by this work.
+- The sync PR stays draft until the main app is ready; merging it after the main promotion triggers the unified deployment.
 
 ## Next Action
 
-For future previews, push a `preview/<suffix>` branch; the workflow rebuilds all active previews. Deleting a branch removes its output on the next successful preview deployment. Do not push to `main` or `dev` for this workflow.
+Review the root-plus-preview PR on the dependency-aware branch train. Do not deploy until the user separately authorizes the main release.
